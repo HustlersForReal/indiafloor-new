@@ -273,9 +273,10 @@ function useListingForm(formMode: Mode) {
     if (!flags.isLandType && v.flooring) payload.Flooring = v.flooring;
     if (!flags.isLandType && v.waterSupply) payload.Water_Supply = v.waterSupply;
 
-    // listingMode keeps the two journeys independent in dedupe fingerprints
+    // listingMode keeps the two journeys independent in dedupe fingerprints;
+    // Seller and Builder each write to their own collection.
     const result = await saveSubmission(
-      "ListYourProperty",
+      formMode === "builder" ? "BuilderListing" : "ListYourProperty",
       { ...v, listingMode: formMode },
       payload,
     );

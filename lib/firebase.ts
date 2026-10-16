@@ -1,10 +1,12 @@
 /**
- * Firestore writes for all three India Floor forms.
+ * Firestore writes for all four India Floor forms.
  *
- * Collections:
+ * Collections (one per form, so each journey stays independently queryable
+ * and its de-duplication never blocks another):
  *   form_submissions/submissions/indiaFloor-BuyerRequirements
+ *   form_submissions/submissions/indiaFloor-RentRequirements
  *   form_submissions/submissions/indiaFloor-ListYourProperty
- *   form_submissions/submissions/indiaFloor-DealerRegistrations
+ *   form_submissions/submissions/indiaFloor-BuilderListing
  *
  * Duplicate protection is two-layer:
  *   1. the submission is written to a document ID derived from its fingerprint,
@@ -35,13 +37,15 @@ import {
 
 export type FormName =
   | "BuyerRequirements"
+  | "RentRequirements"
   | "ListYourProperty"
-  | "DealerRegistrations";
+  | "BuilderListing";
 
 export const SUBMISSION_PATHS: Record<FormName, string> = {
   BuyerRequirements: "form_submissions/submissions/indiaFloor-BuyerRequirements",
+  RentRequirements: "form_submissions/submissions/indiaFloor-RentRequirements",
   ListYourProperty: "form_submissions/submissions/indiaFloor-ListYourProperty",
-  DealerRegistrations: "form_submissions/submissions/indiaFloor-DealerRegistrations",
+  BuilderListing: "form_submissions/submissions/indiaFloor-BuilderListing",
 };
 
 const firebaseConfig = {

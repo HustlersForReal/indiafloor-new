@@ -8,7 +8,7 @@ export default function Logo({ compact = false }: { compact?: boolean }) {
       aria-label="IndiaFloor.com home"
     >
       <Image
-        src="/logo.png"
+        src="/logo.webp"
         alt="India Floor"
         width={96}
         height={96}

@@ -271,7 +271,7 @@ export default function RentRequirementForm({
     const waURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
     const result = await saveSubmission(
-      "BuyerRequirements",
+      "RentRequirements",
       {
         phone: v.phone,
         city: v.city,

@@ -54,7 +54,7 @@ export default function Hero() {
     <section id="top" className="relative min-h-[50svh] overflow-hidden bg-navy-950">
       {/* real backdrop photo + navy legibility overlays */}
       <Image
-        src="/bg.png"
+        src="/bg.webp"
         alt=""
         fill
         priority
