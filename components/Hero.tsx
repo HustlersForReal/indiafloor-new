@@ -92,17 +92,16 @@ export default function Hero() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            DELHI NCR ACTIVE
+            DELHI-NCR ACTIVE
           </span>
           <h1 className="mt-4 text-center text-[48px] leading-[1.08] font-extrabold tracking-tight text-white sm:mt-4 sm:text-left sm:text-[46px]">
-            Your Floor. Our Expertise.
+           Builder Floors, Apartments, Penthouses,
             <br />
-            <span className="text-[#F0A41C]">Your Next Step.</span>
+            <span className="text-[#F0A41C]">Commercial Floors & More.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-[520px] text-center text-[14.5px] leading-relaxed font-medium text-white/85 sm:mx-0 sm:text-left">
-            <span className="font-bold text-white">A White Glove</span> for Buying,
-            Selling, Renting With End-To-End Property Services &amp; Liaisoning
+            <span className="font-bold text-white">A White-Glove Service</span> For Buying, Selling, Renting Property Floors With End-to-End Property Services &amp; Liaisoning
             Assistance.
             <br />
             <span className="mt-1.5 block text-[15px] font-semibold text-[#F0A41C]">
