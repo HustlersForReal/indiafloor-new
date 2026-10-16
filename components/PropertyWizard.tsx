@@ -214,7 +214,7 @@ export default function PropertyWizard({
       });
     } else if (key === "transaction") {
       req("transactionType");
-      if (showPossessionStatus) req("possessionStatus");
+      if (showPossessionStatus && !hidePossession) req("possessionStatus");
       if (isResale) req("occupancyStatus");
     } else if (key === "price") {
       if (!values.expectedValue?.trim()) e.expectedValue = "Required";
@@ -305,6 +305,7 @@ export default function PropertyWizard({
             </div>
             <div className="sm:col-span-2">
               <LocationMap
+                key={`${values.city || ""}|${values.locality || ""}`}
                 onLocationSelect={(addr) => onChange("mapLocation", addr)}
                 initialLocation={values.locality || values.city}
               />

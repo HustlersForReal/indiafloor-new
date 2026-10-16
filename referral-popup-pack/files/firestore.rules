@@ -1,0 +1,219 @@
+rules_version = '2';
+
+// Property Baap referral storage. No backend needed: the website talks to
+// Firestore directly with the public Web SDK. Paste these rules into
+// Firebase Console > Firestore Database > Rules, then Publish.
+// Bot spam is handled client-side (honeypot + min fill-time + OTP attempt cap).
+//
+// referrals/{10-digit-phone} - one doc per referrer (normalized Indian mobile)
+//   optional referredBy: '#BAAP48498A' - code of whoever referred them
+//   Code format accepts both generations: BAAP48498A (current) and PB12345A (legacy).
+//   optional status: 'premium' - set automatically past the signup threshold
+// counters/{last5digits}      - series counter for referral-code letters (A, B, C...)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // THE BUYER form submissions. The website only creates new documents;
+    // existing submissions cannot be read, changed, or deleted by clients.
+    match /form_submissions/submissions/{document=**} {
+      allow read, create, update: if true;
+    }
+
+    function validReferral(phone) {
+      return request.resource.data.keys().hasOnly(
+               ['name', 'phone', 'email', 'who', 'referralCode', 'createdAt', 'updatedAt', 'source', 'referredBy', 'status'])
+        && request.resource.data.phone is string
+        && request.resource.data.phone == phone
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 100
+        && request.resource.data.who is string
+        && request.resource.data.who.size() > 0
+        && request.resource.data.who.size() <= 50
+        && request.resource.data.referralCode is string
+        && request.resource.data.referralCode.matches('#(BAAP[0-9]{5}|PB[0-9]{5})[A-Z]')
+        // Optional referrer: the code of whoever sent this person here. The key
+        // is simply absent for organic signups, so every existing write (all the
+        // other sites included) keeps validating exactly as it did before.
+        && (!('referredBy' in request.resource.data) || (
+              request.resource.data.referredBy is string
+              && request.resource.data.referredBy.matches('#(BAAP[0-9]{5}|PB[0-9]{5})[A-Z]')
+              && request.resource.data.referredBy != request.resource.data.referralCode))
+        // Optional tier. Only ever set to 'premium', and only by the signup
+        // transaction once a referrer crosses the signup threshold, so no
+        // client can invent any other value.
+        && (!('status' in request.resource.data) || request.resource.data.status == 'premium');
+    }
+
+    match /referrals/{phone} {
+      // Single-doc fetch only (no listing). Needed to reuse code on re-register.
+      allow get: if phone.matches('[0-9]{10}');
+      allow create, update: if phone.matches('[0-9]{10}') && validReferral(phone);
+      allow delete, list: if false;
+    }
+
+    // Email -> phone lookup for duplicate-email detection on register.
+    match /referral_emails/{key} {
+      allow get: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['phone', 'email'])
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('[0-9]{10}')
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 0
+        && request.resource.data.email.size() <= 100;
+      allow delete, list: if false;
+    }
+
+    // Per-referrer leads written by the team via console (deal pipeline).
+    // Status values: 'started' | 'approved' | 'successful'.
+    match /referrals/{phone}/leads/{lead} {
+      allow get, list: if phone.matches('[0-9]{10}');
+      allow create, update, delete: if false;
+    }
+
+    // Per-referrer purchase notes written by the website on successful orders.
+    // purchaseId == Razorpay paymentId (idempotent: reruns overwrite, never duplicate).
+    // list is allowed so a future referrer dashboard can read one referrer's folder.
+    function validPurchase(purchaseId) {
+      return request.resource.data.keys().hasOnly(
+               ['paymentId', 'orderId', 'amount', 'serviceName',
+                'buyerName', 'buyerPhone', 'referralId', 'createdAt'])
+        && request.resource.data.keys().hasAll(
+               ['paymentId', 'orderId', 'amount', 'serviceName',
+                'buyerName', 'buyerPhone', 'referralId', 'createdAt'])
+        && request.resource.data.paymentId is string
+        && request.resource.data.paymentId == purchaseId
+        && request.resource.data.orderId is string
+        && request.resource.data.amount is number
+        && request.resource.data.serviceName is string
+        && request.resource.data.serviceName.size() > 0
+        && request.resource.data.serviceName.size() <= 2000
+        && request.resource.data.buyerName is string
+        && request.resource.data.buyerPhone is string
+        && request.resource.data.referralId is string
+        && request.resource.data.referralId.size() > 0
+        && request.resource.data.createdAt is string;
+    }
+
+    match /referrals/{phone}/purchases/{purchaseId} {
+      allow create, update: if phone.matches('[0-9]{10}')
+        && purchaseId.matches('pay_[A-Za-z0-9]+')
+        && validPurchase(purchaseId);
+      allow get, list: if phone.matches('[0-9]{10}');
+      allow delete: if false;
+    }
+
+    // Referral code -> referrer lookup so the welcome popup can show the name,
+    // and the running count of how many people joined using this code.
+    match /referral_codes/{code} {
+      allow get: if code.matches('#(BAAP[0-9]{5}|PB[0-9]{5})[A-Z]');
+      allow create, update: if code.matches('#(BAAP[0-9]{5}|PB[0-9]{5})[A-Z]')
+        && request.resource.data.keys().hasOnly(['phone', 'name', 'joins'])
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('[0-9]{10}')
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        // Optional running counter, bumped inside the signup transaction.
+        // Writes that omit the key (every existing caller, the other sites
+        // included) validate exactly as they did before.
+        && (!('joins' in request.resource.data) || request.resource.data.joins is number);
+      allow delete, list: if false;
+    }
+
+    match /counters/{last5} {
+      // Read + increment-only. Drives the A, B, C... series per last-5 digits.
+      allow get: if last5.matches('[0-9]{5}');
+      allow create: if last5.matches('[0-9]{5}')
+        && request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count == 1;
+      allow update: if last5.matches('[0-9]{5}')
+        && request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.count <= 26;
+      allow delete, list: if false;
+    }
+
+    // ---- SaleDeed.com app blocks (login/signup + orders + profile). ----
+    // The app has no Firebase Auth (OTP is verified server-side via /api/otp/*),
+    // so these rules validate document shape instead of request.auth.
+    // All app reads are single-doc gets; no list queries exist in the codebase.
+
+    // Accounts: docId is "+91" + 10-digit mobile (e.g. +919876543210).
+    //   create: registration writes {name, email, address, phone, createdAt}
+    //   update: profile edit merges {email, address}; checkout merges {orders}
+    function validAccount(phone) {
+      return request.resource.data.keys().hasOnly(
+               ['name', 'phone', 'email', 'address', 'orders', 'createdAt'])
+        && request.resource.data.phone is string
+        && request.resource.data.phone == phone
+        && (!('name' in request.resource.data) || (
+              request.resource.data.name is string
+              && request.resource.data.name.size() > 0
+              && request.resource.data.name.size() <= 100))
+        && (!('email' in request.resource.data) || (
+              request.resource.data.email is string
+              && request.resource.data.email.size() <= 100))
+        && (!('address' in request.resource.data) || (
+              request.resource.data.address is string
+              && request.resource.data.address.size() <= 500))
+        && (!('orders' in request.resource.data) || (
+              request.resource.data.orders is list))
+        && (!('createdAt' in request.resource.data) || (
+              request.resource.data.createdAt is string));
+    }
+
+    match /saledeed-accounts/{phone} {
+      allow get: if phone.matches('\\+[0-9]{12}');
+      allow create: if phone.matches('\\+[0-9]{12}')
+        && validAccount(phone)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0;
+      allow update: if phone.matches('\\+[0-9]{12}') && validAccount(phone);
+      allow delete, list: if false;
+    }
+
+    // Orders: docId is the Razorpay paymentId (e.g. pay_MxAb12CdEf).
+    //   create: checkout writes the full order doc (cart flows omit the
+    //           homeVisit/homeVisitAmount pair, single flow includes them)
+    //   update: same shape allowed (covers double-submit overwrites)
+    function validOrder(paymentId) {
+      return request.resource.data.keys().hasOnly(
+               ['serviceName', 'amount', 'homeVisit', 'homeVisitAmount',
+                'currency', 'paymentId', 'orderId', 'paymentStatus',
+                'userPhone', 'userName', 'userEmail', 'createdAt', 'referralId'])
+        && request.resource.data.keys().hasAll(
+               ['serviceName', 'amount', 'currency', 'paymentId', 'orderId',
+                'paymentStatus', 'userPhone', 'userName', 'userEmail', 'createdAt'])
+        && request.resource.data.serviceName is string
+        && request.resource.data.serviceName.size() > 0
+        && request.resource.data.amount is number
+        && request.resource.data.currency is string
+        && request.resource.data.paymentId is string
+        && request.resource.data.paymentId == paymentId
+        && request.resource.data.orderId is string
+        && request.resource.data.paymentStatus is string
+        && request.resource.data.userPhone is string
+        && request.resource.data.userName is string
+        && request.resource.data.userEmail is string
+        && request.resource.data.createdAt is string
+        && (!('homeVisit' in request.resource.data) || (
+              request.resource.data.homeVisit is bool))
+        && (!('homeVisitAmount' in request.resource.data) || (
+              request.resource.data.homeVisitAmount is number))
+        && (!('referralId' in request.resource.data) || (
+              request.resource.data.referralId is string
+              && request.resource.data.referralId.size() > 0
+              && request.resource.data.referralId.size() <= 20));
+    }
+
+    match /saledeed-orders/{paymentId} {
+      allow get: if paymentId.matches('pay_[A-Za-z0-9]+');
+      allow create, update: if paymentId.matches('pay_[A-Za-z0-9]+') && validOrder(paymentId);
+      allow delete, list: if false;
+    }
+  }
+}

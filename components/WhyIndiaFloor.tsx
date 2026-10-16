@@ -12,8 +12,8 @@ const POINTS = [
     desc: "100% Online platforms charges don't possess the deep on ground knowledge and expertise. We provide you the combination of online discovery and offline execution making your deal 100% cheat proof.",
   },
   {
-    title: "One Niche",
-    desc: "We only deal in property floors and don't claim ourselves to be a jack of all trades.",
+    title: "Outside Investments",
+    desc: 'The biggest scam going on in real estate is the "Local Price Scam". Most of the properties are picked up by the locality investors. We introduce your property to a wider community thus providing you a multiple price and buyers options.',
   },
   {
     title: "One Dealer Trap",
@@ -21,8 +21,8 @@ const POINTS = [
     note: "Note - We are not against property dealers and consider them as our backbone but we believe in individual and area wise expertise not monopoly.",
   },
   {
-    title: "Outside Investments",
-    desc: 'The biggest scam going on in real estate is the "Local Price Scam". Most of the properties are picked up by the locality investors. We introduce your property to a wider community thus providing you a multiple price and buyers options.',
+    title: "One Niche",
+    desc: "We only deal in property floors and don't claim ourselves to be a jack of all trades.",
   },
 ];
 
@@ -60,6 +60,19 @@ export default function WhyIndiaFloor() {
             </div>
           ))}
         </div>
+
+        <a
+          href="#one-call-challenge"
+          className="mt-3 block cursor-pointer rounded-xl border border-slate-200 bg-navy-900 p-5 text-center transition-colors hover:bg-navy-800 sm:p-8"
+        >
+          <h3 className="text-[22px] leading-tight font-extrabold tracking-tight text-white sm:text-[30px]">
+            1 Call Challenge
+          </h3>
+          <p className="mx-auto mt-2 max-w-[720px] text-[12px] leading-relaxed text-white/70 sm:text-[13.5px]">
+            We welcome you to schedule and accept our one challenge to prove you
+            how we provide you the best value for your property floor.
+          </p>
+        </a>
       </div>
     </section>
   );

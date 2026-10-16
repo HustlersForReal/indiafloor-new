@@ -105,8 +105,10 @@ export function fingerprint(bag: Bag): string {
   const type = (bag.propertyType ?? bag.assetType ?? "").toLowerCase().trim();
   const addr = normalizeTokens(bag.address).join("-");
   const pin = (bag.pincode ?? "").replace(/\D/g, "");
+  // seller vs builder listings of the same property are independent journeys
+  const mode = (bag.listingMode ?? "").toLowerCase().trim();
 
-  const raw = [phone, city, type, pin, addr].join("|");
+  const raw = [phone, city, type, pin, addr, mode].join("|");
   // FNV-1a — 32-bit, fast, good enough spread for an ID and deterministic
   // across runs (unlike anything involving Math.random).
   let h = 0x811c9dc5;
@@ -151,6 +153,19 @@ export const DUPLICATE_THRESHOLD = 60;
 export function scoreAgainst(candidate: Bag, incoming: Bag): DedupVerdict {
   const matchedOn: string[] = [];
   let score = 0;
+
+  // seller and builder journeys never block each other
+  const normMode = (m: unknown) => {
+    const t = String(m ?? "").toLowerCase().trim();
+    if (t === "seller" || t === "property_owner") return "seller";
+    if (t === "builder" || t === "property_builder") return "builder";
+    return "";
+  };
+  const candMode = normMode(candidate.listingMode ?? (candidate as Bag).type);
+  const inMode = normMode(incoming.listingMode);
+  if (candMode && inMode && candMode !== inMode) {
+    return { isDuplicate: false, score: 0, matchedOn: [] };
+  }
 
   const phoneMatch =
     !!normalizePhone(candidate.phone ?? candidate.mobile) &&

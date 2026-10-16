@@ -265,14 +265,14 @@ export default function PropertyVivaadFooter({
   const brandStory = (
     <section
       id="brand-story"
-      className="scroll-mt-20 border-b border-[#1f7ad1]/10 bg-white py-12 sm:py-20"
+      className="scroll-mt-20 border-b border-[#314367]/10 bg-white py-12 sm:py-20"
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 text-center sm:mb-14">
           <h2 className="font-serif text-3xl font-black text-[#0e2a5c] sm:text-5xl">
             Our Brand Story
           </h2>
-          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-[#1f7ad1]/30" />
+          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-[#314367]/30" />
         </div>
 
         <div className="space-y-6 text-[15px] leading-relaxed text-[#5b6472] sm:text-[17px]">
@@ -289,7 +289,7 @@ export default function PropertyVivaadFooter({
           <button
             type="button"
             onClick={() => setStoryExpanded(!storyExpanded)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#1f7ad1]/20 bg-white px-6 py-3 text-[15px] font-bold text-[#0a1f45] transition-colors hover:bg-[#0a1f45] hover:text-white sm:text-[17px]"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#314367]/20 bg-white px-6 py-3 text-[15px] font-bold text-[#0a1f45] transition-colors hover:bg-[#0a1f45] hover:text-white sm:text-[17px]"
           >
             {storyExpanded ? "Hide Story" : "View Full Story"}
             <ChevronDown
@@ -461,7 +461,7 @@ export default function PropertyVivaadFooter({
             {PARTNER_TYPES.map((type) => (
               <span
                 key={type}
-                className="rounded-full border-2 border-[#1f7ad1]/30 bg-white px-4 py-2 text-sm font-medium text-[#0a1f45]"
+                className="rounded-full border-2 border-[#314367]/30 bg-white px-4 py-2 text-sm font-medium text-[#0a1f45]"
               >
                 {type}
               </span>
@@ -470,7 +470,7 @@ export default function PropertyVivaadFooter({
           <button
             type="button"
             onClick={() => setShowPartnerModal(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#1f7ad1] px-10 py-5 text-xl font-black tracking-wide text-white transition-colors hover:bg-[#0a1f45] sm:text-2xl"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#314367] px-10 py-5 text-xl font-black tracking-wide text-white transition-colors hover:bg-[#0a1f45] sm:text-2xl"
           >
             Partner With Us
           </button>
@@ -479,7 +479,7 @@ export default function PropertyVivaadFooter({
 
       <section
         id="referral-section"
-        className="scroll-mt-20 border-y border-[#F0A41C] bg-[#1f7ad1] py-10 sm:py-16"
+        className="scroll-mt-20 border-y border-[#F0A41C] bg-[#314367] py-10 sm:py-16"
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-7 flex flex-col items-center gap-2 border-b border-white/20 pb-6 text-center sm:mb-10">
@@ -571,13 +571,13 @@ export default function PropertyVivaadFooter({
   return (
     <>
       <footer
-        className="border-t-[6px] border-[#1f7ad1] bg-white text-white notranslate"
+        className="border-t-[6px] border-[#314367] bg-white text-white notranslate"
         translate="no"
       >
         {/* Get Private Consultation */}
         <section
           id="contact"
-          className="scroll-mt-24 border-b border-[#1f7ad1]/10 bg-[#f5f7fa] py-10 sm:py-16"
+          className="scroll-mt-24 border-b border-[#314367]/10 bg-[#f5f7fa] py-10 sm:py-16"
         >
           <div className="mx-auto grid max-w-6xl gap-8 px-4 text-center sm:px-6 lg:grid-cols-[0.75fr_1.25fr] lg:items-center lg:gap-16 lg:text-left">
             <div>
@@ -612,7 +612,7 @@ export default function PropertyVivaadFooter({
                       setContactErrors({ ...contactErrors, name: "" });
                   }}
                   aria-invalid={Boolean(contactErrors.name)}
-                  className={`min-h-12 w-full rounded-lg border bg-white px-4 text-sm text-[#0e2a5c] outline-none transition-colors placeholder:text-[#9aa3b0] focus:border-[#1f7ad1] ${contactErrors.name ? "border-red-500" : "border-[#dde3ea]"}`}
+                  className={`min-h-12 w-full rounded-lg border bg-white px-4 text-sm text-[#0e2a5c] outline-none transition-colors placeholder:text-[#9aa3b0] focus:border-[#314367] ${contactErrors.name ? "border-red-500" : "border-[#dde3ea]"}`}
                 />
                 {contactErrors.name && (
                   <p className="mt-1 text-left text-xs text-red-500">
@@ -637,7 +637,7 @@ export default function PropertyVivaadFooter({
                       setContactErrors({ ...contactErrors, phone: "" });
                   }}
                   aria-invalid={Boolean(contactErrors.phone)}
-                  className={`min-h-12 w-full rounded-lg border bg-white px-4 text-sm text-[#0e2a5c] outline-none transition-colors placeholder:text-[#9aa3b0] focus:border-[#1f7ad1] ${contactErrors.phone ? "border-red-500" : "border-[#dde3ea]"}`}
+                  className={`min-h-12 w-full rounded-lg border bg-white px-4 text-sm text-[#0e2a5c] outline-none transition-colors placeholder:text-[#9aa3b0] focus:border-[#314367] ${contactErrors.phone ? "border-red-500" : "border-[#dde3ea]"}`}
                 />
                 {contactErrors.phone && (
                   <p className="mt-1 text-left text-xs text-red-500">
@@ -662,7 +662,7 @@ export default function PropertyVivaadFooter({
                       setContactErrors({ ...contactErrors, message: "" });
                   }}
                   aria-invalid={Boolean(contactErrors.message)}
-                  className={`w-full resize-none rounded-lg border bg-white px-4 py-3 text-sm text-[#0e2a5c] outline-none transition-colors placeholder:text-[#9aa3b0] focus:border-[#1f7ad1] ${contactErrors.message ? "border-red-500" : "border-[#dde3ea]"}`}
+                  className={`w-full resize-none rounded-lg border bg-white px-4 py-3 text-sm text-[#0e2a5c] outline-none transition-colors placeholder:text-[#9aa3b0] focus:border-[#314367] ${contactErrors.message ? "border-red-500" : "border-[#dde3ea]"}`}
                 />
                 {contactErrors.message && (
                   <p className="mt-1 text-left text-xs text-red-500">
@@ -673,7 +673,7 @@ export default function PropertyVivaadFooter({
 
               <button
                 type="submit"
-                className="rounded-lg bg-[#1f7ad1] px-6 py-3 font-bold text-white transition-colors hover:bg-[#0a1f45] sm:col-span-2 sm:justify-self-start"
+                className="rounded-lg bg-[#314367] px-6 py-3 font-bold text-white transition-colors hover:bg-[#0a1f45] sm:col-span-2 sm:justify-self-start"
               >
                 Send Enquiry
               </button>
@@ -682,9 +682,9 @@ export default function PropertyVivaadFooter({
         </section>
 
         {/* 1 Call Challenge */}
-        <div className="relative overflow-hidden border-b border-[#1f7ad1]/10 bg-white py-8 text-center sm:py-12">
+        <div id="one-call-challenge" className="relative scroll-mt-24 overflow-hidden border-b border-[#314367]/10 bg-white py-8 text-center sm:py-12">
           <div className="mx-auto max-w-4xl px-4">
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#1f7ad1]/10 sm:mb-6 sm:h-16 sm:w-16">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#314367]/10 sm:mb-6 sm:h-16 sm:w-16">
               <PhoneCall className="h-6 w-6 text-[#0a1f45] sm:h-8 sm:w-8" />
             </div>
             <h2 className="mb-4 text-3xl font-extrabold tracking-[-0.02em] text-[#0e2a5c] sm:mb-6 sm:text-4xl md:text-6xl">
@@ -707,7 +707,7 @@ export default function PropertyVivaadFooter({
                   `*Hello ${siteName}, I Accept Your 1 Call Challenge.*`,
                 )
               }
-              className="inline-flex items-center justify-center gap-3 rounded-lg bg-[#1f7ad1] px-6 py-3 font-sans text-base font-bold text-white shadow-lg shadow-[#1f7ad1]/20 transition-all hover:bg-[#0a1f45] sm:px-10 sm:py-5 sm:text-lg"
+              className="inline-flex items-center justify-center gap-3 rounded-lg bg-[#314367] px-6 py-3 font-sans text-base font-bold text-white shadow-lg shadow-[#314367]/20 transition-all hover:bg-[#0a1f45] sm:px-10 sm:py-5 sm:text-lg"
             >
               Accept The Challenge
             </button>
@@ -717,12 +717,12 @@ export default function PropertyVivaadFooter({
         {/* Need More Services */}
         <div
           id="property-baap"
-          className="relative scroll-mt-6 overflow-hidden border-b border-[#1f7ad1]/10 bg-[#f5f7fa] py-10 sm:py-16"
+          className="relative scroll-mt-6 overflow-hidden border-b border-[#314367]/10 bg-[#f5f7fa] py-10 sm:py-16"
         >
           {watermark}
           <div className="relative z-10 mx-auto max-w-5xl px-4">
             <div className="mb-10 text-center sm:mb-14">
-              <h2 className="mx-auto mb-5 w-fit rounded-full border border-[#1f7ad1]/20 bg-[#1f7ad1] px-6 py-2.5 text-2xl font-extrabold text-white shadow-[0_8px_20px_rgba(201,162,39,0.14)] tracking-[-0.02em] sm:text-3xl">
+              <h2 className="mx-auto mb-5 w-fit rounded-full border border-[#314367]/20 bg-[#314367] px-6 py-2.5 text-2xl font-extrabold text-white shadow-[0_8px_20px_rgba(201,162,39,0.14)] tracking-[-0.02em] sm:text-3xl">
                 Need More Services?
               </h2>
               <div className="flex flex-col items-center justify-center gap-2">
@@ -739,20 +739,20 @@ export default function PropertyVivaadFooter({
             </div>
 
             <div className="mb-5 flex items-center gap-4">
-              <div className="h-px flex-1 bg-[#1f7ad1]/20" />
+              <div className="h-px flex-1 bg-[#314367]/20" />
               <p className="text-base font-extrabold tracking-[-0.02em] text-[#0e2a5c] sm:text-lg">
                 Some Unmatched Benefits
               </p>
-              <div className="h-px flex-1 bg-[#1f7ad1]/20" />
+              <div className="h-px flex-1 bg-[#314367]/20" />
             </div>
 
             <div className="mb-8 grid grid-cols-1 gap-3 sm:mb-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
               {benefits.map((service) => (
                 <div
                   key={service}
-                  className="flex items-center gap-3 rounded-xl border border-[#1f7ad1]/10 bg-white px-4 py-3 shadow-sm transition-all hover:border-[#0a1f45]/40 hover:shadow-md sm:px-5 sm:py-4"
+                  className="flex items-center gap-3 rounded-xl border border-[#314367]/10 bg-white px-4 py-3 shadow-sm transition-all hover:border-[#0a1f45]/40 hover:shadow-md sm:px-5 sm:py-4"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1f7ad1]/10 sm:h-9 sm:w-9">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#314367]/10 sm:h-9 sm:w-9">
                     <CheckCircle2 className="h-4 w-4 text-[#0a1f45] sm:h-5 sm:w-5" />
                   </div>
                   <span className="font-sans text-xs font-semibold text-[#0e2a5c] sm:text-sm">
@@ -773,7 +773,7 @@ export default function PropertyVivaadFooter({
                     icon: null,
                   })
                 }
-                className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-[#1f7ad1] bg-[#1f7ad1] px-8 py-3.5 font-sans text-base font-black tracking-[0.14em] text-white uppercase shadow-[0_0_15px_rgba(201,162,39,0.15)] transition-all duration-200 hover:bg-[#0a1f45] hover:shadow-[0_0_25px_rgba(201,162,39,0.25)] active:scale-[0.98] sm:px-12 sm:py-4 sm:text-lg"
+                className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-[#314367] bg-[#314367] px-8 py-3.5 font-sans text-base font-black tracking-[0.14em] text-white uppercase shadow-[0_0_15px_rgba(201,162,39,0.15)] transition-all duration-200 hover:bg-[#0a1f45] hover:shadow-[0_0_25px_rgba(201,162,39,0.25)] active:scale-[0.98] sm:px-12 sm:py-4 sm:text-lg"
               >
                 <span className="font-black text-white [text-shadow:0_-1px_0_rgba(255,255,255,0.35),0_2px_1px_rgba(35,0,0,0.72)]">
                   {parentBrand}
@@ -786,7 +786,7 @@ export default function PropertyVivaadFooter({
         {brandStory}
 
         {/* Our Legal Ecosystem */}
-        <section className="border-y border-[#1f7ad1]/10 bg-gradient-to-b from-[#f5f7fa] to-white py-10 sm:py-20">
+        <section className="border-y border-[#314367]/10 bg-gradient-to-b from-[#f5f7fa] to-white py-10 sm:py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="mb-8 text-center sm:mb-14">
               <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-[#0e2a5c] sm:text-4xl">
@@ -805,7 +805,7 @@ export default function PropertyVivaadFooter({
                     icon: null,
                   })
                 }
-                className="relative z-10 cursor-pointer rounded-2xl border border-[#1f7ad1] bg-white px-10 py-6 text-left transition-shadow hover:shadow-lg hover:shadow-[#1f7ad1]/10"
+                className="relative z-10 cursor-pointer rounded-2xl border border-[#314367] bg-white px-10 py-6 text-left transition-shadow hover:shadow-lg hover:shadow-[#314367]/10"
               >
                 <h3 className="text-center text-3xl font-extrabold tracking-[-0.02em]">
                   <span className="text-[#0e2a5c]">SaleDeed</span>
@@ -829,7 +829,7 @@ export default function PropertyVivaadFooter({
                   y1="0"
                   x2="50"
                   y2="32"
-                  stroke="#1f7ad1"
+                  stroke="#314367"
                   strokeWidth="0.3"
                 />
                 <line
@@ -837,7 +837,7 @@ export default function PropertyVivaadFooter({
                   y1="32"
                   x2="90.15"
                   y2="32"
-                  stroke="#1f7ad1"
+                  stroke="#314367"
                   strokeWidth="4"
                 />
                 {[10, 30, 50, 70, 90].map((x) => (
@@ -847,7 +847,7 @@ export default function PropertyVivaadFooter({
                     y1="32"
                     x2={x}
                     y2="64"
-                    stroke="#1f7ad1"
+                    stroke="#314367"
                     strokeWidth="0.3"
                   />
                 ))}
@@ -866,7 +866,7 @@ export default function PropertyVivaadFooter({
                 <path
                   d="M 24 0 L 24 100"
                   fill="none"
-                  stroke="#1f7ad1"
+                  stroke="#314367"
                   strokeWidth="4"
                   vectorEffect="non-scaling-stroke"
                   strokeLinecap="butt"
@@ -874,7 +874,7 @@ export default function PropertyVivaadFooter({
                 <path
                   d="M 76 0 L 76 100"
                   fill="none"
-                  stroke="#1f7ad1"
+                  stroke="#314367"
                   strokeWidth="4"
                   vectorEffect="non-scaling-stroke"
                   strokeLinecap="butt"
@@ -887,9 +887,9 @@ export default function PropertyVivaadFooter({
                     key={brand.name}
                     type="button"
                     onClick={() => setSelectedBrand(brand)}
-                    className="group rounded-2xl border border-[#1f7ad1]/10 bg-white p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:border-[#0a1f45] hover:shadow-xl hover:shadow-[#1f7ad1]/5"
+                    className="group rounded-2xl border border-[#314367]/10 bg-white p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:border-[#0a1f45] hover:shadow-xl hover:shadow-[#314367]/5"
                   >
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1f7ad1]/10 text-[#0a1f45]">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#314367]/10 text-[#0a1f45]">
                       {brand.icon}
                     </div>
                     <h4 className="text-lg font-bold font-extrabold tracking-[-0.02em] text-[#0e2a5c] transition-colors group-hover:text-[#0a1f45]">
@@ -909,11 +909,11 @@ export default function PropertyVivaadFooter({
 
         {partnership}
 
-        <div className="border-t border-[#1f7ad1]/10" />
+        <div className="border-t border-[#314367]/10" />
 
         {/* Footer body */}
         <div className="relative overflow-hidden bg-[#f5f7fa] px-4 pt-16 pb-10 sm:px-6 sm:pt-20 sm:pb-12">
-          <div className="pointer-events-none absolute -top-24 left-1/2 h-[200px] w-[600px] -translate-x-1/2 rounded-full bg-[#1f7ad1]/[0.07] blur-[100px]" />
+          <div className="pointer-events-none absolute -top-24 left-1/2 h-[200px] w-[600px] -translate-x-1/2 rounded-full bg-[#314367]/[0.07] blur-[100px]" />
 
           <div className="relative z-10 mx-auto max-w-5xl">
             <div className="mb-10 flex flex-col items-center text-center sm:mb-12">
@@ -933,7 +933,7 @@ export default function PropertyVivaadFooter({
               </p>
             </div>
 
-            <div className="mb-8 h-[1px] w-full bg-gradient-to-r from-transparent via-[#1f7ad1]/30 to-transparent" />
+            <div className="mb-8 h-[1px] w-full bg-gradient-to-r from-transparent via-[#314367]/30 to-transparent" />
 
             <nav
               aria-label="Footer Navigation"
@@ -975,16 +975,16 @@ export default function PropertyVivaadFooter({
             className="absolute inset-0 bg-white/80 backdrop-blur-md"
             onClick={() => setSelectedBrand(null)}
           />
-          <div className="relative w-full max-w-md rounded-2xl border border-[#1f7ad1]/20 bg-[#f5f7fa] p-8 text-center shadow-2xl shadow-[#1f7ad1]/5">
+          <div className="relative w-full max-w-md rounded-2xl border border-[#314367]/20 bg-[#f5f7fa] p-8 text-center shadow-2xl shadow-[#314367]/5">
             <button
               type="button"
               onClick={() => setSelectedBrand(null)}
               aria-label="Close"
-              className="absolute top-4 right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#1f7ad1]/10 text-[#5b6472] transition-colors hover:bg-[#0a1f45]/20 hover:text-white"
+              className="absolute top-4 right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#314367]/10 text-[#5b6472] transition-colors hover:bg-[#0a1f45]/20 hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#1f7ad1]/10">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#314367]/10">
               <ExternalLink className="h-7 w-7 text-[#0a1f45]" />
             </div>
             <h3 className="mb-2 text-xl font-extrabold tracking-[-0.02em] text-[#0e2a5c]">
@@ -998,7 +998,7 @@ export default function PropertyVivaadFooter({
               <button
                 type="button"
                 onClick={() => setSelectedBrand(null)}
-                className="flex-1 cursor-pointer rounded-xl bg-[#1f7ad1]/10 py-3 text-sm font-bold text-[#5b6472] transition-colors hover:bg-[#0a1f45]/20"
+                className="flex-1 cursor-pointer rounded-xl bg-[#314367]/10 py-3 text-sm font-bold text-[#5b6472] transition-colors hover:bg-[#0a1f45]/20"
               >
                 Stay Here
               </button>
@@ -1007,7 +1007,7 @@ export default function PropertyVivaadFooter({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setSelectedBrand(null)}
-                className="flex-1 rounded-xl bg-[#1f7ad1] py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[#0a1f45]"
+                className="flex-1 rounded-xl bg-[#314367] py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[#0a1f45]"
               >
                 Continue
               </a>
@@ -1053,7 +1053,7 @@ export default function PropertyVivaadFooter({
                 onChange={(e) =>
                   setPartnerForm({ ...partnerForm, name: e.target.value })
                 }
-                className="min-h-12 rounded-lg border border-[#dde3ea] bg-white px-4 text-sm text-[#0e2a5c] outline-none focus:border-[#1f7ad1]"
+                className="min-h-12 rounded-lg border border-[#dde3ea] bg-white px-4 text-sm text-[#0e2a5c] outline-none focus:border-[#314367]"
               />
               <input
                 required
@@ -1064,7 +1064,7 @@ export default function PropertyVivaadFooter({
                 onChange={(e) =>
                   setPartnerForm({ ...partnerForm, phone: e.target.value })
                 }
-                className="min-h-12 rounded-lg border border-[#dde3ea] bg-white px-4 text-sm text-[#0e2a5c] outline-none focus:border-[#1f7ad1]"
+                className="min-h-12 rounded-lg border border-[#dde3ea] bg-white px-4 text-sm text-[#0e2a5c] outline-none focus:border-[#314367]"
               />
               <div ref={partnerTypeRef} className="relative">
                 <button
@@ -1072,7 +1072,7 @@ export default function PropertyVivaadFooter({
                   onClick={() => setPartnerTypeOpen((open) => !open)}
                   aria-haspopup="listbox"
                   aria-expanded={partnerTypeOpen}
-                  className="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-lg border border-[#dde3ea] bg-white px-4 text-left text-sm text-[#0e2a5c] outline-none transition-colors focus:border-[#1f7ad1]"
+                  className="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-lg border border-[#dde3ea] bg-white px-4 text-left text-sm text-[#0e2a5c] outline-none transition-colors focus:border-[#314367]"
                 >
                   <span className={partnerForm.type ? "text-[#0e2a5c]" : "text-[#9aa3b0]"}>
                     {partnerForm.type || "Select partner type"}
@@ -1096,7 +1096,7 @@ export default function PropertyVivaadFooter({
                           setPartnerForm({ ...partnerForm, type });
                           setPartnerTypeOpen(false);
                         }}
-                        className={`w-full cursor-pointer rounded-md px-3 py-2 text-left text-sm transition-colors ${partnerForm.type === type ? "bg-[#1f7ad1]/10 font-semibold text-[#0a1f45]" : "text-[#0e2a5c] hover:bg-[#f5f7fa] hover:text-[#0a1f45]"}`}
+                        className={`w-full cursor-pointer rounded-md px-3 py-2 text-left text-sm transition-colors ${partnerForm.type === type ? "bg-[#314367]/10 font-semibold text-[#0a1f45]" : "text-[#0e2a5c] hover:bg-[#f5f7fa] hover:text-[#0a1f45]"}`}
                       >
                         {type}
                       </button>
@@ -1112,11 +1112,11 @@ export default function PropertyVivaadFooter({
                 onChange={(e) =>
                   setPartnerForm({ ...partnerForm, message: e.target.value })
                 }
-                className="resize-none rounded-lg border border-[#dde3ea] bg-white px-4 py-3 text-sm text-[#0e2a5c] outline-none focus:border-[#1f7ad1]"
+                className="resize-none rounded-lg border border-[#dde3ea] bg-white px-4 py-3 text-sm text-[#0e2a5c] outline-none focus:border-[#314367]"
               />
               <button
                 type="submit"
-                className="mt-2 cursor-pointer rounded-lg bg-[#1f7ad1] px-5 py-3 font-bold text-white transition-colors hover:bg-[#0a1f45]"
+                className="mt-2 cursor-pointer rounded-lg bg-[#314367] px-5 py-3 font-bold text-white transition-colors hover:bg-[#0a1f45]"
               >
                 Register Via WhatsApp
               </button>

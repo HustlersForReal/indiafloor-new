@@ -1,12 +1,52 @@
+"use client";
+
 import Image from "next/image";
 import { Building2, Handshake, Home, KeyRound } from "lucide-react";
 import LeadForm from "./LeadForm";
+import { REQUEST_TAB_EVENT } from "./BuyerPreferencesSection";
+import { SELLER_MODE_EVENT } from "./SellerSection";
 
 const ROLES = [
-  { icon: Home, label: "Buyer", sub: "Find Your Dream Floor" },
-  { icon: KeyRound, label: "Tenant", sub: "Hassle-Free Leasing" },
-  { icon: Handshake, label: "Property Owner", sub: "Sell At The Right Value" },
-  { icon: Building2, label: "Builder", sub: "Showcase Your Inventory" },
+  {
+    icon: Home,
+    label: "Buyer",
+    sub: "Find Your Dream Floor",
+    href: "#registration-section",
+    go: () =>
+      window.dispatchEvent(
+        new CustomEvent(REQUEST_TAB_EVENT, { detail: { tab: "buy" } }),
+      ),
+  },
+  {
+    icon: KeyRound,
+    label: "Tenant",
+    sub: "Hassle-Free Leasing",
+    href: "#registration-section",
+    go: () =>
+      window.dispatchEvent(
+        new CustomEvent(REQUEST_TAB_EVENT, { detail: { tab: "rent" } }),
+      ),
+  },
+  {
+    icon: Handshake,
+    label: "Property Owner",
+    sub: "Sell At The Right Value",
+    href: "#seller-section",
+    go: () =>
+      window.dispatchEvent(
+        new CustomEvent(SELLER_MODE_EVENT, { detail: { tab: "seller" } }),
+      ),
+  },
+  {
+    icon: Building2,
+    label: "Builder",
+    sub: "Showcase Your Inventory",
+    href: "#seller-section",
+    go: () =>
+      window.dispatchEvent(
+        new CustomEvent(SELLER_MODE_EVENT, { detail: { tab: "builder" } }),
+      ),
+  },
 ];
 
 export default function Hero() {
@@ -32,7 +72,14 @@ export default function Hero() {
 
       <div className="relative mx-auto grid w-full max-w-[1400px] items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_380px] lg:px-10 lg:py-10">
         <div>
-          <h1 className="mt-1 text-center text-[48px] leading-[1.08] font-extrabold tracking-tight text-white sm:mt-4 sm:text-left sm:text-[46px]">
+          <span className="mx-auto flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12px] font-semibold text-white backdrop-blur-sm sm:mx-0">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            Delhi NCR Active
+          </span>
+          <h1 className="mt-4 text-center text-[48px] leading-[1.08] font-extrabold tracking-tight text-white sm:mt-4 sm:text-left sm:text-[46px]">
             Your Floor. Our Expertise.
             <br />
             <span className="text-[#F0A41C]">Your Next Step.</span>
@@ -50,16 +97,23 @@ export default function Hero() {
 
           <div
             id="services"
-            className="mt-7 grid max-w-[760px] scroll-mt-28 grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:items-stretch sm:justify-start sm:gap-y-5 sm:divide-x sm:divide-white/20 lg:flex-nowrap"
+            className="mt-7 grid max-w-[760px] scroll-mt-28 grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-0"
           >
-            {ROLES.map(({ icon: Icon, label, sub }) => (
-              <div key={label} className="text-center sm:pr-5 sm:pl-5 sm:text-left sm:first:pl-0 sm:last:pr-0">
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/40 sm:mx-0">
+            {ROLES.map(({ icon: Icon, label, sub, href, go }, i) => (
+              <a
+                key={label}
+                href={href}
+                onClick={go}
+                className={`group block rounded-xl p-2 text-center transition-colors hover:bg-white/10 sm:text-left sm:[&:not(:first-child)]:border-l sm:[&:not(:first-child)]:border-white/20 ${
+                  i > 0 ? "sm:pl-5" : ""
+                } ${i < ROLES.length - 1 ? "sm:pr-5" : ""}`}
+              >
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/40 transition-all group-hover:scale-110 group-hover:border-[#F0A41C] sm:mx-0">
                   <Icon className="h-5 w-5 text-white" strokeWidth={1.6} />
                 </span>
                 <p className="mt-2.5 text-[15px] font-bold text-white">{label}</p>
                 <p className="mt-0.5 text-[11px] whitespace-nowrap text-white/70">{sub}</p>
-              </div>
+              </a>
             ))}
           </div>
         </div>

@@ -5,13 +5,15 @@ import { CircleCheck, Handshake, Home, IndianRupee, LineChart } from "lucide-rea
 import CustomSelect from "@/components/CustomSelect";
 import PropertyWizard, { type PropValues } from "@/components/PropertyWizard";
 import {
-  CONFIGURATION_OPTS, PROPERTY_TYPE_OPTIONS, SELL_CONFIG, WHATSAPP_NUMBER, inputCls, labelCls,
+  CONFIGURATION_OPTS, PROPERTY_TYPE_OPTIONS, SELL_CONFIG, inputCls, labelCls,
   propertyFlags, toFirestoreKey,
 } from "@/lib/property-config";
 import { NAME_RE, PHONE_RE, sanitizeName, sanitizePhone } from "@/lib/validation";
 import { getReferredBy, normalizeRefCode } from "@/lib/referral-storage";
 import { saveSubmission } from "@/lib/firebase";
 import { duplicateMessage } from "@/lib/dedupe";
+
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "918800505050";
 
 const OWNER_POINTS = [
   {
@@ -36,30 +38,20 @@ const OWNER_POINTS = [
   },
 ];
 
-const OWNER_STATS = [
-  { num: "18 days", label: "Average time to close a deal" },
-  { num: "100%", label: "Owner details stay private" },
-];
+type Mode = "seller" | "builder";
 
 export const SELLER_MODE_EVENT = "indiafloor:select-seller-mode";
 
-export default function SellerSection() {
+/**
+ * One fully independent listing form. SellerSection mounts one per tab, so the
+ * two journeys never share values, steps, errors or submission state.
+ */
+function useListingForm(formMode: Mode) {
   const [v, setV] = useState<PropValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState(0);
-  const [mode, setMode] = useState<"seller" | "builder">("seller");
-
-  useEffect(() => {
-    const onMode = (e: Event) => {
-      const detail = (e as CustomEvent<{ tab: "seller" | "builder" }>).detail;
-      if (detail.tab === "builder") setMode("builder");
-      else setMode("seller");
-    };
-    window.addEventListener(SELLER_MODE_EVENT, onMode);
-    return () => window.removeEventListener(SELLER_MODE_EVENT, onMode);
-  }, []);
   const [referralCode, setReferralCode] = useState("");
   const [duplicateNote, setDuplicateNote] = useState<string | null>(null);
 
@@ -82,6 +74,9 @@ export default function SellerSection() {
     window.addEventListener("pb-ref-updated", h);
     return () => window.removeEventListener("pb-ref-updated", h);
   }, []);
+
+  const hideTransaction = formMode === "builder";
+  const flags = propertyFlags(v);
 
   const handleChange = (id: string, value: string) => {
     setV((prev) => ({ ...prev, [id]: value }));
@@ -128,8 +123,6 @@ export default function SellerSection() {
     setSubmitted(false);
   };
 
-  const flags = propertyFlags(v);
-
   const validateBasic = (): boolean => {
     const e: Record<string, string> = {};
     if (!v.sellerName?.trim()) e.sellerName = "Required";
@@ -147,6 +140,8 @@ export default function SellerSection() {
     e?.preventDefault();
 
     // Full re-validation, then jump to the earliest failing step.
+    // NOTE: possession & ownership have no UI (always hidden), so they are
+    // never required here — requiring them would block submission forever.
     const errs: Record<string, string> = {};
     if (!v.sellerName?.trim()) errs.sellerName = "Required";
     else if (!NAME_RE.test(v.sellerName.trim()))
@@ -162,7 +157,6 @@ export default function SellerSection() {
     if (!v.address?.trim()) errs.address = "Required";
     else if (v.address.trim().length < 5)
       errs.address = "Enter a valid address (min 5 characters)";
-    const hideTransaction = mode === "builder";
     if (!hideTransaction && !v.transactionType) errs.transactionType = "Required";
     if (!v.expectedValue?.trim()) errs.expectedValue = "Required";
 
@@ -171,19 +165,18 @@ export default function SellerSection() {
           !(fd.key === "coveredArea" && !flags.showCoveredArea))
         errs[fd.key] = "Required";
     });
-    if (!hideTransaction && flags.showPossessionStatus && !v.possessionStatus?.trim())
-      errs.possessionStatus = "Required";
     if (!hideTransaction && flags.isResale && !v.occupancyStatus?.trim())
       errs.occupancyStatus = "Required";
 
+    // step index of Price Details shifts when Transaction Details is hidden
+    const priceStep = hideTransaction ? 3 : 4;
     setErrors(errs);
     if (Object.keys(errs).length > 0) {
       if (errs.sellerName || errs.mobile || errs.assetType || errs.configuration) setStep(0);
       else if (errs.city || errs.locality || errs.address || errs.pincode) setStep(1);
       else if (Object.keys(errs).some((k) => flags.configKeys.has(k))) setStep(2);
-      else if (errs.transactionType || errs.possessionStatus || errs.occupancyStatus)
-        setStep(3);
-      else if (errs.expectedValue) setStep(4);
+      else if (errs.transactionType || errs.occupancyStatus) setStep(3);
+      else if (errs.expectedValue) setStep(priceStep);
       return;
     }
 
@@ -200,7 +193,7 @@ export default function SellerSection() {
     const L: string[] = [
       "━━━━━━━━━━━━━━━━━━━━",
       "*INDIA FLOOR*",
-      "New Property Submission",
+      formMode === "seller" ? "New Property Submission" : "New Builder Inventory Submission",
       "━━━━━━━━━━━━━━━━━━━━",
       "",
       `*Name:* ${v.sellerName || "-"}`,
@@ -227,22 +220,16 @@ export default function SellerSection() {
     if (!flags.isLandType && v.flooring) L.push(`*Flooring:* ${v.flooring}`);
     if (!flags.isLandType && v.waterSupply) L.push(`*Water Supply:* ${v.waterSupply}`);
 
-    L.push("", `*Transaction Type:* ${v.transactionType || "-"}`);
-    if (flags.showPossessionStatus && v.possessionStatus)
-      L.push(`*Possession Status:* ${v.possessionStatus}`);
-    if (flags.isResale && v.occupancyStatus)
-      L.push(`*Occupancy Status:* ${v.occupancyStatus}`);
+    if (!hideTransaction) {
+      L.push("", `*Transaction Type:* ${v.transactionType || "-"}`);
+      if (flags.isResale && v.occupancyStatus)
+        L.push(`*Occupancy Status:* ${v.occupancyStatus}`);
+    }
 
     L.push("", `*Expected Price:* ₹${v.expectedValue || "-"}`);
     if (v.negotiability) L.push(`*Negotiability:* ${v.negotiability}`);
 
-    L.push(
-      "",
-      v.ownershipType ? `*Ownership Type:* ${v.ownershipType}` : "",
-      v.existingLoan ? `*Existing Loan:* ${v.existingLoan}` : "",
-      v.legalDispute ? `*Dispute/Litigation:* ${v.legalDispute}` : "",
-      v.documentsAvailable ? `*Documents Available:* ${v.documentsAvailable}` : "",
-    );
+    if (v.additionalNotes?.trim()) L.push(`*Additional Notes:* ${v.additionalNotes.trim()}`);
     if (referralCode.trim()) L.push(`*Referral Code:* ${referralCode.trim()}`);
     L.push("", `*Date:* ${date}`, `*Time:* ${time}`, "━━━━━━━━━━━━━━━━━━━━");
 
@@ -259,16 +246,20 @@ export default function SellerSection() {
       Address: v.address || "",
       Pin_Code: v.pincode || "",
       Map_Location: v.mapLocation || "",
-      Transaction_Type: v.transactionType || "",
       Expected_Price: v.expectedValue || "",
       Price_Negotiability: v.negotiability || "",
-      Ownership_Type: v.ownershipType || "",
-      Existing_Loan: v.existingLoan || "",
-      Legal_Disputes: v.legalDispute || "",
-      ...(v.documentsAvailable ? { Documents_Available: v.documentsAvailable } : {}),
+      ...(!hideTransaction
+        ? {
+            Transaction_Type: v.transactionType || "",
+            ...(flags.isResale && v.occupancyStatus
+              ? { Occupancy_Status: v.occupancyStatus }
+              : {}),
+          }
+        : {}),
+      ...(v.additionalNotes?.trim() ? { Additional_Notes: v.additionalNotes.trim() } : {}),
       ...(referralCode.trim() ? { Referral_Code: referralCode.trim() } : {}),
       datetime: `${date} ${time}`,
-      type: mode === "seller" ? "Property_Owner" : "Property_Builder",
+      type: formMode === "seller" ? "Property_Owner" : "Property_Builder",
     };
 
     // Spec-derived keys are written after the explicit ones, exactly as the
@@ -281,12 +272,13 @@ export default function SellerSection() {
     if (!flags.isLandType && v.propertyAge) payload.Property_Age = v.propertyAge;
     if (!flags.isLandType && v.flooring) payload.Flooring = v.flooring;
     if (!flags.isLandType && v.waterSupply) payload.Water_Supply = v.waterSupply;
-    if (flags.showPossessionStatus && v.possessionStatus)
-      payload.Possession_Status = v.possessionStatus;
-    if (flags.isResale && v.occupancyStatus)
-      payload.Occupancy_Status = v.occupancyStatus;
 
-    const result = await saveSubmission("ListYourProperty", v, payload);
+    // listingMode keeps the two journeys independent in dedupe fingerprints
+    const result = await saveSubmission(
+      "ListYourProperty",
+      { ...v, listingMode: formMode },
+      payload,
+    );
 
     setSubmitting(false);
     setDuplicateNote(
@@ -295,7 +287,8 @@ export default function SellerSection() {
         : null,
     );
     setSubmitted(true);
-    if (waURL) window.open(waURL, "_blank");
+    // exact repeats are acknowledged in-form; don't ping the office twice
+    if (!result.duplicate && waURL) window.open(waURL, "_blank");
   };
 
   const resetForm = () => {
@@ -312,6 +305,35 @@ export default function SellerSection() {
     errors[k] ? (
       <span className="mt-0.5 block text-[10px] text-red-400">{errors[k]}</span>
     ) : null;
+
+  return {
+    v, errors, setErrors, step, setStep, submitted, referralCode, setReferralCode,
+    duplicateNote, submitting, flags, hideTransaction,
+    handleChange, handleAssetTypeChange, handleTransactionChange,
+    handleConstructionToggle, validateBasic, handleSubmit, resetForm, err,
+  };
+}
+
+export default function SellerSection() {
+  const [mode, setMode] = useState<Mode>("seller");
+  const seller = useListingForm("seller");
+  const builder = useListingForm("builder");
+  const F = mode === "seller" ? seller : builder;
+
+  useEffect(() => {
+    const onMode = (e: Event) => {
+      const detail = (e as CustomEvent<{ tab: "seller" | "builder"; name?: string; phone?: string }>).detail;
+      const nextMode = detail.tab === "builder" ? "builder" : "seller";
+      setMode(nextMode);
+      if (detail.name || detail.phone) {
+        const target = nextMode === "builder" ? builder : seller;
+        if (detail.name) target.handleChange("sellerName", detail.name);
+        if (detail.phone) target.handleChange("mobile", detail.phone);
+      }
+    };
+    window.addEventListener(SELLER_MODE_EVENT, onMode);
+    return () => window.removeEventListener(SELLER_MODE_EVENT, onMode);
+  }, []);
 
   return (
     <section id="seller-section" className="w-full bg-white px-4 py-10 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
@@ -388,7 +410,7 @@ export default function SellerSection() {
               </h4>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-[13px] leading-relaxed text-muted">
                 <li>Select your property-provider journey.</li>
-                <li>Choose the applicable property tier.</li>
+                <li>Select the property configuration.</li>
                 <li>Complete the prefilled property submission form.</li>
                 <li>Provide the property details and appropriate ownership or marketing authorisation.</li>
                 <li>Discuss the commercial terms with IndiaFloor.</li>
@@ -402,17 +424,17 @@ export default function SellerSection() {
           </div>
 
           <div className="order-1 rounded-[20px] border border-border bg-panel-bg p-5 sm:p-8 lg:order-2 lg:p-10">
-            {submitted ? (
+            {F.submitted ? (
               <div className="flex flex-col items-center justify-center gap-4 py-16">
                 <CircleCheck className="h-12 w-12 text-primary" strokeWidth={1.5} />
                 <span className="text-xl font-bold text-primary">Property Details Received</span>
                 <p className="max-w-[320px] text-center text-sm text-muted">
-                  {duplicateNote ??
+                  {F.duplicateNote ??
                     "Your property details have been received. Our team will contact you for verification and next steps."}
                 </p>
                 <button
                   type="button"
-                  onClick={resetForm}
+                  onClick={F.resetForm}
                   className="mt-3 cursor-pointer border-none bg-none text-xs font-semibold tracking-[0.15em] text-primary uppercase"
                 >
                   Submit Another
@@ -420,7 +442,7 @@ export default function SellerSection() {
               </div>
             ) : (
               /* the seller form swallows every Enter press */
-              <form onSubmit={handleSubmit} noValidate onKeyDown={(e) => {
+              <form onSubmit={F.handleSubmit} noValidate onKeyDown={(e) => {
                 if (e.key === "Enter") e.preventDefault();
               }}>
                 <div
@@ -437,20 +459,20 @@ export default function SellerSection() {
                 </p>
 
                 <PropertyWizard
-                  values={v}
-                  onChange={handleChange}
-                  onTransactionChange={handleTransactionChange}
-                  onConstructionToggle={handleConstructionToggle}
-                  onSubmit={() => handleSubmit()}
-                  submitting={submitting}
-                  errors={errors}
-                  onStepErrors={setErrors}
-                  step={step}
-                  setStep={setStep}
+                  values={F.v}
+                  onChange={F.handleChange}
+                  onTransactionChange={F.handleTransactionChange}
+                  onConstructionToggle={F.handleConstructionToggle}
+                  onSubmit={() => F.handleSubmit()}
+                  submitting={F.submitting}
+                  errors={F.errors}
+                  onStepErrors={F.setErrors}
+                  step={F.step}
+                  setStep={F.setStep}
                   firstStepTitle="Basic Details"
-                  onFirstStepNext={() => { if (validateBasic()) setStep(1); }}
+                  onFirstStepNext={() => { if (F.validateBasic()) F.setStep(1); }}
                   submitLabel="Submit Your Property"
-                  hideTransaction={mode === "builder"}
+                  hideTransaction={F.hideTransaction}
                   hidePossession={true}
                   hideOwnership={true}
                   showConsentNote
@@ -461,11 +483,11 @@ export default function SellerSection() {
                         <input
                           type="text"
                           placeholder="Your full name"
-                          value={v.sellerName || ""}
-                          onChange={(e) => handleChange("sellerName", sanitizeName(e.target.value))}
+                          value={F.v.sellerName || ""}
+                          onChange={(e) => F.handleChange("sellerName", sanitizeName(e.target.value))}
                           className={inputCls}
                         />
-                        {err("sellerName")}
+                        {F.err("sellerName")}
                       </div>
                       <div>
                         <label className={labelCls}>Mobile Number *</label>
@@ -473,43 +495,53 @@ export default function SellerSection() {
                           type="tel"
                           inputMode="numeric"
                           placeholder="10-digit mobile number"
-                          value={v.mobile || ""}
-                          onChange={(e) => handleChange("mobile", sanitizePhone(e.target.value))}
+                          value={F.v.mobile || ""}
+                          onChange={(e) => F.handleChange("mobile", sanitizePhone(e.target.value))}
                           className={inputCls}
                         />
-                        {err("mobile")}
+                        {F.err("mobile")}
                       </div>
                       <div>
                         <label className={labelCls}>Property Type *</label>
                         <CustomSelect
                           compact
-                          value={v.assetType || ""}
-                          onChange={handleAssetTypeChange}
+                          value={F.v.assetType || ""}
+                          onChange={F.handleAssetTypeChange}
                           options={PROPERTY_TYPE_OPTIONS}
                           placeholder="Select property type"
                         />
-                        {err("assetType")}
+                        {F.err("assetType")}
                       </div>
                       <div>
                         <label className={labelCls}>Configuration *</label>
                         <CustomSelect
                           compact
-                          value={v.configuration || ""}
-                          onChange={(val) => handleChange("configuration", val)}
+                          value={F.v.configuration || ""}
+                          onChange={(val) => F.handleChange("configuration", val)}
                           options={CONFIGURATION_OPTS}
                           placeholder="Select configuration"
                         />
-                        {err("configuration")}
+                        {F.err("configuration")}
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className={labelCls}>Additional Notes</label>
+                        <textarea
+                          rows={3}
+                          placeholder="Anything else you want us to know (optional)"
+                          value={F.v.additionalNotes || ""}
+                          onChange={(e) => F.handleChange("additionalNotes", e.target.value.slice(0, 500))}
+                          className={inputCls}
+                        />
                       </div>
                       <div className="sm:col-span-2">
                         <label className={labelCls}>Referral Code</label>
                         <input
                           type="text"
                           placeholder="e.g. PB12345A (optional)"
-                          value={referralCode}
+                          value={F.referralCode}
                           onChange={(e) =>
-                            setReferralCode(
-                              e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8),
+                            F.setReferralCode(
+                              e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10),
                             )
                           }
                           className={inputCls}

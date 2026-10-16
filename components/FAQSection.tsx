@@ -95,7 +95,7 @@ export default function FAQSection() {
       className="w-full scroll-mt-24 bg-[#F5F7FA] px-4 py-14 sm:px-10 sm:py-16 lg:px-12 lg:py-20"
     >
       <div className="mx-auto max-w-4xl">
-        <h2 className="text-[30px] font-black tracking-tight text-navy sm:text-[40px]">
+        <h2 className="text-center text-[30px] font-black tracking-tight text-navy sm:text-[40px]">
           Frequently Asked Questions
         </h2>
 

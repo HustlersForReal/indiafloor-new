@@ -1,4 +1,5 @@
 import BuyerPreferencesSection from "../components/BuyerPreferencesSection";
+import ContactFabs from "../components/ContactFabs";
 import FAQSection from "../components/FAQSection";
 import PropertyVivaadFooter from "../components/PropertyVivaadFooter";
 import Header from "../components/Header";
@@ -22,6 +23,7 @@ export default function Home() {
         <FAQSection />
       </main>
       <PropertyVivaadFooter />
+      <ContactFabs />
     </div>
   );
 }

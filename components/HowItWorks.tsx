@@ -1,3 +1,5 @@
+"use client";
+
 import { Calculator, ClipboardList, MessagesSquare, Rocket } from "lucide-react";
 
 const STEPS = [
@@ -56,12 +58,21 @@ export default function HowItWorks() {
           We work together to get you what you need and want not what we have
           to offer by default.
         </p>
-        <a
-          href="#top"
-          className="mt-7 inline-flex items-center justify-center rounded-lg bg-navy-800 px-8 py-3.5 text-[14px] font-bold text-white transition-colors hover:bg-navy-700"
+        <button
+          type="button"
+          onClick={() => {
+            const msg = encodeURIComponent(
+              "Hello IndiaFloor.com, I Want Expert Advice.",
+            );
+            window.open(
+              `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "918800505050"}?text=${msg}`,
+              "_blank",
+            );
+          }}
+          className="mt-7 inline-flex cursor-pointer items-center justify-center rounded-lg bg-navy-800 px-8 py-3.5 text-[14px] font-bold text-white transition-colors hover:bg-navy-700"
         >
           Reach Us Today
-        </a>
+        </button>
       </div>
     </section>
   );

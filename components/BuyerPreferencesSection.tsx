@@ -29,29 +29,19 @@ const LocationMap = dynamic(() => import("@/components/LocationMap"), {
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "918800505050";
 
-/** Emitted by the tiers table and the navbar; handled by BuyerPreferencesSection. */
-export const TIER_PICK_EVENT = "indiafloor:select-tier";
+/** Dispatched by hero role blocks; switches the requirement form tab. */
 export const REQUEST_TAB_EVENT = "indiafloor:select-request-tab";
 
 /* ---------------------------------------------------------------- constants */
 
 const AREAS = [
-  "Central Delhi",
-  "New Delhi",
-  "North Delhi",
-  "North East Delhi",
-  "North West Delhi",
-  "South Delhi",
-  "South East Delhi",
-  "South West Delhi",
-  "West Delhi",
-  "East Delhi",
-  "Gurugram",
-  "Ghaziabad",
+  "Noida",
+  "Delhi",
+  "Greater Noida",
   "Faridabad",
   "Greater Faridabad",
-  "Noida",
-  "Greater Noida",
+  "Gurugram",
+  "Ghaziabad",
 ];
 
 const PROPERTY_TYPES = [
@@ -61,22 +51,12 @@ const PROPERTY_TYPES = [
   "Commercial Floors",
   "Industrial Floors",
   "Institutional Floors",
+  "Other",
 ];
-
-const STUDIO_CONFIG = ["Studio", "1 RK"];
 
 const BEDROOMS = ["1 RK / 1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"];
 
 const CONFIGURATION_OPTIONS = ["Single-level", "Duplex", "Triplex", "Other"];
-
-const BUILT_TYPES = [
-  "Residential Floors",
-  "Farmhouse Floors",
-  "Penthouses",
-  "Commercial Floors",
-  "Industrial Floors",
-  "Institutional Floors",
-];
 
 const CONSTRUCTION_STATUS = ["New Launch", "Under Construction", "Ready to Move"];
 
@@ -85,10 +65,6 @@ const POSSESSION_OPTIONS: Record<string, string[]> = {
   "Under Construction": ["Within 6 Months", "Within 1 Year", "1–2 Years", "2+ Years", "Flexible"],
   "New Launch": ["Within 1 Year", "1–2 Years", "2–3 Years", "3+ Years", "Flexible"],
 };
-
-const AREA_OPTIONS = ["0", "500", "1,000", "1,500", "2,000", "2,500", "3,000", "4,000+"];
-
-const LAND_TYPES: string[] = [];
 
 const inputCls =
   "w-full rounded-lg border border-border bg-white px-3 py-2.5 font-sans text-[13px] text-off-white outline-none transition-colors placeholder:text-[#A6AEBB] focus:border-primary focus:ring-1 focus:ring-primary/20";
@@ -148,39 +124,23 @@ export default function BuyerPreferencesSection() {
   const [referralCode, setReferralCode] = useState("");
   const [duplicateNote, setDuplicateNote] = useState<string | null>(null);
   const [mode, setMode] = useState<"buy" | "rent">("buy");
-  const [pendingTier, setPendingTier] = useState("");
-  const [pendingKey, setPendingKey] = useState(0);
+  const [rentPrefill, setRentPrefill] = useState<{ name?: string; phone?: string; n: number } | null>(null);
 
-  /* Tier-table buttons preselect a tier, the navbar preselects a tab. */
-  useEffect(() => {
-    const onPick = (e: Event) => {
-      const detail = (e as CustomEvent<{ mode: string; tier: string }>).detail;
-      if (detail.mode === "rent") {
-        setMode("rent");
-        setPendingTier(detail.tier);
-        setPendingKey((k) => k + 1);
-        // keep Buyer form preselected too when the user later switches to buy
-        setValues((prev) => ({ ...prev, budgetTier: detail.tier }));
-      } else {
-        setMode("buy");
-        setValues((prev) => ({ ...prev, budgetTier: detail.tier }));
-        // keep Rent form preselected too when the user later switches to rent
-        setPendingTier(detail.tier);
-        setPendingKey((k) => k + 1);
-      }
-    };
-    window.addEventListener(TIER_PICK_EVENT, onPick);
-    return () => window.removeEventListener(TIER_PICK_EVENT, onPick);
-  }, []);
-
+  /* hero role blocks switch the requirement tab, optionally pre-filling */
   useEffect(() => {
     const onTab = (e: Event) => {
-      const detail = (e as CustomEvent<{ tab: "buy" | "rent" }>).detail;
-      if (detail.tab === "rent") {
-        setMode("rent");
-        // keep whatever the user typed; don't invent a tier either
-      } else {
-        setMode("buy");
+      const detail = (e as CustomEvent<{ tab: "buy" | "rent"; name?: string; phone?: string }>).detail;
+      setMode(detail.tab === "rent" ? "rent" : "buy");
+      if (detail.tab === "rent" && (detail.name || detail.phone)) {
+        setRentPrefill({ name: detail.name, phone: detail.phone, n: Date.now() });
+      }
+      if (detail.name || detail.phone) {
+        setValues((prev) => ({
+          ...prev,
+          ...(detail.name ? { name: detail.name } : {}),
+          ...(detail.phone ? { phone: detail.phone } : {}),
+        }));
+        setSubmitted(false);
       }
     };
     window.addEventListener(REQUEST_TAB_EVENT, onTab);
@@ -212,19 +172,15 @@ export default function BuyerPreferencesSection() {
   }, []);
 
   /* derived gates */
-  const isLand = LAND_TYPES.includes(values.propertyType);
-  const isStudio = values.propertyType === "Studio Apartment";
   const isResidentialFloor = ["Residential Floors", "Farmhouse Floors", "Penthouses"].includes(
     values.propertyType || "",
   );
   const showBedrooms = !!values.propertyType && isResidentialFloor;
-  const showStudioConfig = isStudio;
-  const showConstruction = !!values.propertyType && !isLand;
+  const showConstruction = !!values.propertyType;
   const showPossession =
     showConstruction &&
     !!values.constructionStatus &&
     !!POSSESSION_OPTIONS[values.constructionStatus];
-  const showPlots = isLand;
   const citySelected = !!values.city;
   const localities = values.localities
     ? values.localities.split(", ").filter(Boolean)
@@ -246,12 +202,7 @@ export default function BuyerPreferencesSection() {
   const handleTypeChange = (v: string) => {
     setValues((prev) => {
       const next: Record<string, string> = { ...prev, propertyType: v };
-      if (!LAND_TYPES.includes(v)) {
-        delete next.plotAreaMin;
-        delete next.plotAreaMax;
-      }
       if (!["Residential Floors", "Farmhouse Floors", "Penthouses"].includes(v)) delete next.bedrooms;
-      if (v !== "Studio Apartment") delete next.studioConfig;
       return next;
     });
     if (errors.propertyType) {
@@ -275,7 +226,8 @@ export default function BuyerPreferencesSection() {
   };
 
   const addLocality = () => {
-    const v = locInput.trim();
+    // commas would break the comma-joined storage, so flatten them
+    const v = locInput.replace(/,/g, " ").replace(/\s+/g, " ").trim();
     if (v.length < 2) {
       setErrors((prev) => ({
         ...prev,
@@ -320,24 +272,11 @@ export default function BuyerPreferencesSection() {
 
     if (showBedrooms && !values.bedrooms)
       newErrors.bedrooms = "Please select your preferred bedroom configuration.";
-    if (showStudioConfig && !values.studioConfig)
-      newErrors.studioConfig = "Please select studio configuration.";
     if (showConstruction && !values.constructionStatus)
       newErrors.constructionStatus = "Please select construction status.";
     if (showPossession && !values.possession)
       newErrors.possession = "Please select possession / availability preference.";
 
-    if (showPlots && !values.plotAreaMin)
-      newErrors.plotAreaMin = "Minimum plot area is required.";
-    if (showPlots && !values.plotAreaMax)
-      newErrors.plotAreaMax = "Maximum plot area is required.";
-    if (
-      showPlots &&
-      values.plotAreaMin &&
-      values.plotAreaMax &&
-      AREA_OPTIONS.indexOf(values.plotAreaMin) > AREA_OPTIONS.indexOf(values.plotAreaMax)
-    )
-      newErrors.plotAreaRange = "Maximum plot area cannot be greater than maximum area.";
 
     setErrors(newErrors); // full replace, never merge
     return Object.keys(newErrors).length === 0;
@@ -379,12 +318,9 @@ export default function BuyerPreferencesSection() {
         values.budgetTier ? ` (${TIER_RANGES.sale[values.budgetTier as TierName]})` : ""
       }`,
       showBedrooms ? `*Bedrooms:* ${values.bedrooms || "-"}` : "",
-      showStudioConfig ? `*Studio Configuration:* ${values.studioConfig || "-"}` : "",
       showConstruction ? `*Construction Status:* ${values.constructionStatus || "-"}` : "",
       showPossession ? `*Possession / Availability:* ${values.possession || "-"}` : "",
-      showPlots
-        ? `*Plot Area:* ${values.plotAreaMin || "-"} – ${values.plotAreaMax || "-"} sqft`
-        : "",
+      values.additionalNotes?.trim() ? `*Additional Notes:* ${values.additionalNotes.trim()}` : "",
       referralCode.trim() ? `*Referral Code:* ${referralCode.trim()}` : "",
       "",
       `*Date:* ${date}`,
@@ -408,12 +344,9 @@ export default function BuyerPreferencesSection() {
       Configuration: values.configuration || "",
       Budget_Tier: values.budgetTier || "",
       ...(showBedrooms ? { Bedrooms: values.bedrooms || "" } : {}),
-      ...(showStudioConfig ? { Studio_Configuration: values.studioConfig || "" } : {}),
       ...(showConstruction ? { Construction_Status: values.constructionStatus || "" } : {}),
       ...(showPossession ? { Possession_Availability: values.possession || "" } : {}),
-      ...(showPlots
-        ? { Plot_Area_Min: values.plotAreaMin || "", Plot_Area_Max: values.plotAreaMax || "" }
-        : {}),
+      ...(values.additionalNotes?.trim() ? { Additional_Notes: values.additionalNotes.trim() } : {}),
       ...(referralCode.trim() ? { Referral_Code: referralCode.trim() } : {}),
       datetime: `${date} ${time}`,
       type: "Buyer",
@@ -435,7 +368,8 @@ export default function BuyerPreferencesSection() {
     }
 
     setSubmitted(true);
-    if (waURL) window.open(waURL, "_blank");
+    // exact repeats are acknowledged in-form; don't ping the office twice
+    if (!result.duplicate && waURL) window.open(waURL, "_blank");
   };
 
   const resetForm = () => {
@@ -517,7 +451,7 @@ export default function BuyerPreferencesSection() {
           <div className="order-1 rounded-[20px] border border-border bg-panel-bg p-5 sm:p-8 lg:order-2 lg:p-10">
           {mode === "rent" ? (
             /* key remounts on tier change so the form starts clean with it set */
-            <RentRequirementForm key={`rent-${pendingTier}-${pendingKey}`} initialTier={pendingTier} />
+            <RentRequirementForm prefill={rentPrefill} />
           ) : submitted ? (
             <div className="flex flex-col items-center justify-center gap-4 py-16">
               <CircleCheck className="h-12 w-12 text-primary" strokeWidth={1.5} />
@@ -718,6 +652,7 @@ export default function BuyerPreferencesSection() {
 
                     <div className="mt-2">
                       <LocationMap
+                        key={`${values.city || ""}|${localities.join("|")}`}
                         onLocationSelect={(addr) => handleChange("mapLocation", addr)}
                         initialLocation={
                           localities.length > 0
@@ -762,30 +697,6 @@ export default function BuyerPreferencesSection() {
                   </div>
                 )}
 
-                {/* 10 */}
-                {showStudioConfig && (
-                  <div className="sm:col-span-2">
-                    <label className={labelCls}>Studio Configuration *</label>
-                    <div className="flex flex-wrap gap-2">
-                      {STUDIO_CONFIG.map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => handleChange("studioConfig", c)}
-                          className={chipCls(values.studioConfig === c)}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                    {errors.studioConfig && (
-                      <span className="mt-0.5 block text-[10px] text-red-400">
-                        {errors.studioConfig}
-                      </span>
-                    )}
-                  </div>
-                )}
-
                 {/* 11 */}
                 {showConstruction && (
                   <div className="sm:col-span-2">
@@ -810,35 +721,22 @@ export default function BuyerPreferencesSection() {
                   </div>
                 )}
 
-                {/* 12 — sorted by length desc, then chunked 2 per row */}
+                {/* 12 */}
                 {showPossession && (
                   <div className="sm:col-span-2">
                     <label className={labelCls}>Possession / Availability *</label>
-                    {(() => {
-                      const opts = POSSESSION_OPTIONS[values.constructionStatus || ""];
-                      const sorted = [...opts].sort((a, b) => b.length - a.length);
-                      const rows = [sorted.slice(0, 2), sorted.slice(2)];
-                      return (
-                        <div className="flex flex-col gap-2">
-                          {rows.map((row, ri) =>
-                            row.length > 0 ? (
-                              <div key={ri} className="flex gap-2">
-                                {row.map((opt) => (
-                                  <button
-                                    key={opt}
-                                    type="button"
-                                    onClick={() => handleChange("possession", opt)}
-                                    className={chipCls(values.possession === opt)}
-                                  >
-                                    {opt}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : null,
-                          )}
-                        </div>
-                      );
-                    })()}
+                    <div className="flex flex-wrap gap-2">
+                      {POSSESSION_OPTIONS[values.constructionStatus || ""].map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => handleChange("possession", opt)}
+                          className={chipCls(values.possession === opt)}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
                     {errors.possession && (
                       <span className="mt-0.5 block text-[10px] text-red-400">
                         {errors.possession}
@@ -847,52 +745,20 @@ export default function BuyerPreferencesSection() {
                   </div>
                 )}
 
-                {/* 13 */}
-                {showPlots && (
-                  <div>
-                    <label className={labelCls}>Minimum Plot Area *</label>
-                    <CustomSelect
-                      compact
-                      value={values.plotAreaMin || ""}
-                      onChange={(v) => handleChange("plotAreaMin", v)}
-                      options={AREA_OPTIONS}
-                      placeholder="Min area"
-                    />
-                    {errors.plotAreaMin && (
-                      <span className="mt-0.5 block text-[10px] text-red-400">
-                        {errors.plotAreaMin}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* 14 */}
-                {showPlots && (
-                  <div>
-                    <label className={labelCls}>Maximum Plot Area *</label>
-                    <CustomSelect
-                      compact
-                      value={values.plotAreaMax || ""}
-                      onChange={(v) => handleChange("plotAreaMax", v)}
-                      options={AREA_OPTIONS}
-                      placeholder="Max area"
-                    />
-                    {errors.plotAreaMax && (
-                      <span className="mt-0.5 block text-[10px] text-red-400">
-                        {errors.plotAreaMax}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* 15 */}
-                {errors.plotAreaRange && (
-                  <div className="-mt-1 sm:col-span-2">
-                    <span className="text-[10px] text-red-400">
-                      {errors.plotAreaRange}
-                    </span>
-                  </div>
-                )}
+                {/* Additional Notes */}
+                <div className="sm:col-span-2">
+                  <label className={labelCls} htmlFor="b-notes">
+                    Additional Notes
+                  </label>
+                  <textarea
+                    id="b-notes"
+                    rows={3}
+                    placeholder="Anything else you want us to know (optional)"
+                    value={values.additionalNotes || ""}
+                    onChange={(e) => handleChange("additionalNotes", e.target.value.slice(0, 500))}
+                    className={inputCls}
+                  />
+                </div>
 
                 {/* 16 */}
                 <div className="sm:col-span-2">
@@ -906,7 +772,7 @@ export default function BuyerPreferencesSection() {
                     value={referralCode}
                     onChange={(e) =>
                       setReferralCode(
-                        e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8),
+                        e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10),
                       )
                     }
                     className={inputCls}

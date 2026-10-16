@@ -19,6 +19,8 @@ type Props = {
   placeholder: string;
   compact?: boolean;
   multiple?: boolean;
+  /** borderless trigger for embedding inside another field wrapper */
+  bare?: boolean;
 };
 
 export default function CustomSelect({
@@ -28,6 +30,7 @@ export default function CustomSelect({
   placeholder,
   compact = false,
   multiple = false,
+  bare = false,
 }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -64,9 +67,13 @@ export default function CustomSelect({
   // instead of bleeding into the neighbouring field.
   const wrap = `relative w-full min-w-0 ${open ? "z-[70]" : "z-0"}`;
 
-  const trigger = compact
-    ? "flex w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 py-2.5 text-left text-[13px] transition-colors hover:border-primary/40 focus:border-primary"
-    : "flex w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-white px-[14px] py-3 text-left text-[14px] transition-colors hover:border-primary/40 focus:border-primary";
+  const triggerBase =
+    "flex w-full min-w-0 items-center justify-between gap-2 rounded-lg text-left transition-colors";
+  const trigger = bare
+    ? `${triggerBase} border-none bg-transparent px-3 py-2.5 text-[13px]`
+    : compact
+      ? `${triggerBase} border border-border bg-white px-3 py-2.5 text-[13px] hover:border-primary/40 focus:border-primary`
+      : `${triggerBase} border border-border bg-white px-[14px] py-3 text-[14px] hover:border-primary/40 focus:border-primary"`;
 
   return (
     <div ref={ref} className={wrap}>

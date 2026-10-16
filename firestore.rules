@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// IndiaFloor.com Firestore rules. Paste into Firebase Console > Firestore
+// Database > Rules, then Publish.
+//
+// Two collections the site actually uses:
+//   form_submissions/submissions/indiaFloor-*   — the three form submissions
+//   referral_codes/{#CODE}                       — popup referrer-name lookup
+//
+// NOTE on form_submissions: `read` (get + list) is required because the
+// de-duplication layer queries recent submissions for the same phone before
+// writing. This is a public-by-design, no-backend setup — do not store secrets
+// in submissions. Tighten to `get` only if you drop the fuzzy dedupe query.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // THE FLOOR form submissions. The website only creates new documents.
+    match /form_submissions/submissions/{document=**} {
+      allow read, create, update: if true;
+    }
+
+    // Referral code -> referrer lookup so the welcome popup can show the name.
+    // Single-doc get only; listing/deleting is blocked.
+    match /referral_codes/{code} {
+      allow get: if code.matches('#(BAAP[0-9]{5}|PB[0-9]{5})[A-Z]');
+      allow create, update: if code.matches('#(BAAP[0-9]{5}|PB[0-9]{5})[A-Z]')
+        && request.resource.data.keys().hasOnly(['phone', 'name', 'joins'])
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('[0-9]{10}')
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && (!('joins' in request.resource.data) || request.resource.data.joins is number);
+      allow delete, list: if false;
+    }
+  }
+}

@@ -28,10 +28,13 @@ const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "918800505050
 /* -------------------------------------------------------------- constants */
 
 const AREAS = [
-  "Central Delhi", "New Delhi", "North Delhi", "North East Delhi",
-  "North West Delhi", "South Delhi", "South East Delhi", "South West Delhi",
-  "West Delhi", "East Delhi", "Gurugram", "Ghaziabad", "Faridabad",
-  "Greater Faridabad", "Noida", "Greater Noida",
+  "Noida",
+  "Delhi",
+  "Greater Noida",
+  "Faridabad",
+  "Greater Faridabad",
+  "Gurugram",
+  "Ghaziabad",
 ];
 
 const RENTAL_TYPES = [
@@ -41,12 +44,12 @@ const RENTAL_TYPES = [
   "Commercial Floors",
   "Industrial Floors",
   "Institutional Floors",
+  "Other",
 ];
 
 const BEDROOMS = ["1 RK / 1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"];
 
 const CONFIGURATION_OPTIONS = ["Single-level", "Duplex", "Triplex", "Other"];
-const STUDIO_CONFIG = ["Studio", "1 RK"];
 const FURNISHING = ["Unfurnished", "Semi-Furnished", "Fully Furnished"];
 
 const CONSTRUCTION_STATUS = ["Ready to Move", "Under Construction", "New Launch"];
@@ -58,10 +61,6 @@ const AVAILABILITY: Record<string, string[]> = {
 };
 
 const TENURE = ["11 Months", "Monthly", "6 Months", "Quarterly"];
-
-const LAND_TYPES: string[] = [];
-
-const PLOT_AREA = ["500", "1,000", "1,500", "2,000", "2,500", "3,000", "4,000+"];
 
 const inputCls =
   "w-full rounded-lg border border-border bg-white px-3 py-2.5 font-sans text-[13px] text-off-white outline-none transition-colors placeholder:text-[#A6AEBB] focus:border-primary focus:ring-1 focus:ring-primary/20";
@@ -76,21 +75,33 @@ const chipCls = (active: boolean) =>
   }`;
 
 export default function RentRequirementForm({
-  initialTier = "",
+  prefill,
 }: {
-  /** preselected when the user clicks a tier in the tiers table */
-  initialTier?: string;
+  /** hero lead form hands over name/phone; `n` re-triggers repeat sends */
+  prefill?: { name?: string; phone?: string; n: number } | null;
 }) {
-  const [v, setV] = useState<Record<string, string>>(() => {
-    const seed: Record<string, string> = {};
-    if (initialTier) seed.rentTier = initialTier;
-    return seed;
-  });
+  const [v, setV] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [locInput, setLocInput] = useState("");
   const [referralCode, setReferralCode] = useState("");
+  const [duplicateNote, setDuplicateNote] = useState<string | null>(null);
+
+  /* hero lead form pre-fills name/phone */
+  useEffect(() => {
+    if (!prefill) return;
+    // Deferred so the state updates do not run synchronously inside the effect.
+    const timer = window.setTimeout(() => {
+      setV((prev) => ({
+        ...prev,
+        ...(prefill.name ? { name: prefill.name } : {}),
+        ...(prefill.phone ? { phone: prefill.phone } : {}),
+      }));
+      setSubmitted(false);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [prefill]);
 
   useEffect(() => {
     const fill = () => {
@@ -113,22 +124,13 @@ export default function RentRequirementForm({
   }, []);
 
   /* derived gates */
-  const isLand = LAND_TYPES.includes(v.propertyType);
-  const isShared = ["PG / Hostel", "Co-living Space", "Shared Flat"].includes(
-    v.propertyType,
-  );
   const showBedrooms =
     !!v.propertyType &&
-    !isLand &&
-    !isShared &&
     ["Residential Floors", "Farmhouse Floors", "Penthouses"].includes(v.propertyType);
-  const showStudioConfig = v.propertyType === "Studio Apartment";
-  const showConstruction = !!v.propertyType && !isLand && !isShared;
+  const showConstruction = !!v.propertyType;
   const showAvailability =
     showConstruction && !!v.constructionStatus && !!AVAILABILITY[v.constructionStatus];
-  const showFurnishing =
-    !!v.propertyType && !isLand && !isShared;
-  const showPlots = isLand;
+  const showFurnishing = !!v.propertyType;
   const citySelected = !!v.city;
   const localities = v.localities ? v.localities.split(", ").filter(Boolean) : [];
 
@@ -147,20 +149,8 @@ export default function RentRequirementForm({
   const handleTypeChange = (type: string) => {
     setV((prev) => {
       const next: Record<string, string> = { ...prev, propertyType: type };
-      if (!LAND_TYPES.includes(type)) {
-        delete next.plotAreaMin;
-        delete next.plotAreaMax;
-      }
-      if (["Residential Floors", "Farmhouse Floors", "Penthouses"].includes(type)) {
-        delete next.studioConfig;
-      } else {
+      if (!["Residential Floors", "Farmhouse Floors", "Penthouses"].includes(type)) {
         delete next.bedrooms;
-      }
-      if (["PG / Hostel", "Co-living Space", "Shared Flat"].includes(type)) {
-        delete next.bedrooms;
-        delete next.constructionStatus;
-        delete next.possession;
-        delete next.furnishing;
       }
       return next;
     });
@@ -178,7 +168,8 @@ export default function RentRequirementForm({
   };
 
   const addLocality = () => {
-    const val = locInput.trim();
+    // commas would break the comma-joined storage, so flatten them
+    const val = locInput.replace(/,/g, " ").replace(/\s+/g, " ").trim();
     if (val.length < 2) {
       setErrors((prev) => ({
         ...prev,
@@ -220,15 +211,12 @@ export default function RentRequirementForm({
 
     if (showBedrooms && !v.bedrooms)
       e.bedrooms = "Please select your preferred bedroom configuration.";
-    if (showStudioConfig && !v.studioConfig)
-      e.studioConfig = "Please select studio configuration.";
     if (showConstruction && !v.constructionStatus)
       e.constructionStatus = "Please select construction status.";
     if (showAvailability && !v.possession)
       e.possession = "Please select when you need it from.";
     if (showFurnishing && !v.furnishing)
       e.furnishing = "Please select furnishing status.";
-    if (showPlots && !v.plotArea) e.plotArea = "Plot area is required.";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -266,12 +254,11 @@ export default function RentRequirementForm({
         v.rentTier ? ` (${TIER_RANGES.rent[v.rentTier as TierName]})` : ""
       }`,
       showBedrooms ? `*Bedrooms:* ${v.bedrooms || "-"}` : "",
-      showStudioConfig ? `*Studio Configuration:* ${v.studioConfig || "-"}` : "",
       showConstruction ? `*Construction Status:* ${v.constructionStatus || "-"}` : "",
       showAvailability ? `*Available From:* ${v.possession || "-"}` : "",
       showFurnishing ? `*Furnishing:* ${v.furnishing || "-"}` : "",
-      showPlots ? `*Plot Area:* ${v.plotArea || "-"} sqft` : "",
       v.tenure ? `*Lease Tenure:* ${v.tenure}` : "",
+      v.additionalNotes?.trim() ? `*Additional Notes:* ${v.additionalNotes.trim()}` : "",
       referralCode.trim() ? `*Referral Code:* ${referralCode.trim()}` : "",
       "",
       `*Date:* ${date}`,
@@ -283,7 +270,7 @@ export default function RentRequirementForm({
 
     const waURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
-    await saveSubmission(
+    const result = await saveSubmission(
       "BuyerRequirements",
       {
         phone: v.phone,
@@ -302,12 +289,11 @@ export default function RentRequirementForm({
         Configuration: v.configuration || "",
         Rent_Tier: v.rentTier || "",
         ...(showBedrooms ? { Bedrooms: v.bedrooms || "" } : {}),
-        ...(showStudioConfig ? { Studio_Configuration: v.studioConfig || "" } : {}),
         ...(showConstruction ? { Construction_Status: v.constructionStatus || "" } : {}),
         ...(showAvailability ? { Available_From: v.possession || "" } : {}),
         ...(showFurnishing ? { Furnishing: v.furnishing || "" } : {}),
-        ...(showPlots ? { Plot_Area: v.plotArea || "" } : {}),
         ...(v.tenure ? { Lease_Tenure: v.tenure } : {}),
+        ...(v.additionalNotes?.trim() ? { Additional_Notes: v.additionalNotes.trim() } : {}),
         ...(referralCode.trim() ? { Referral_Code: referralCode.trim() } : {}),
         datetime: `${date} ${time}`,
         type: "Rent",
@@ -315,8 +301,18 @@ export default function RentRequirementForm({
     );
 
     setSubmitting(false);
+
+    if (result.duplicate) {
+      setDuplicateNote(
+        "You have already sent us this requirement. We will call you about the one you sent earlier.",
+      );
+    } else {
+      setDuplicateNote(null);
+    }
+
     setSubmitted(true);
-    if (waURL) window.open(waURL, "_blank");
+    // exact repeats are acknowledged in-form; don't ping the office twice
+    if (!result.duplicate && waURL) window.open(waURL, "_blank");
   };
 
   const reset = () => {
@@ -324,6 +320,7 @@ export default function RentRequirementForm({
     setV({});
     setErrors({});
     setLocInput("");
+    setDuplicateNote(null);
     const r = getReferredBy();
     setReferralCode(r ? r.replace(/^#/, "") : "");
   };
@@ -339,8 +336,8 @@ export default function RentRequirementForm({
         <CircleCheck className="h-12 w-12 text-primary" strokeWidth={1.5} />
         <span className="text-xl font-bold text-primary">Rental Requirement Received</span>
         <p className="max-w-[320px] text-center text-sm text-muted">
-          Our team will review what you are looking for and call you with matching
-          options.
+          {duplicateNote ??
+            "Our team will review what you are looking for and call you with matching options."}
         </p>
         <button
           type="button"
@@ -501,6 +498,7 @@ export default function RentRequirementForm({
 
             <div className="mt-2">
               <LocationMap
+                key={`${v.city || ""}|${localities.join("|")}`}
                 onLocationSelect={(addr) => handleChange("mapLocation", addr)}
                 initialLocation={
                   localities.length > 0
@@ -535,25 +533,6 @@ export default function RentRequirementForm({
               ))}
             </div>
             {err("bedrooms")}
-          </div>
-        )}
-
-        {showStudioConfig && (
-          <div className="sm:col-span-2">
-            <label className={labelCls}>Studio Configuration *</label>
-            <div className="flex flex-wrap gap-2">
-              {STUDIO_CONFIG.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => handleChange("studioConfig", c)}
-                  className={chipCls(v.studioConfig === c)}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-            {err("studioConfig")}
           </div>
         )}
 
@@ -614,20 +593,6 @@ export default function RentRequirementForm({
           </div>
         )}
 
-        {showPlots && (
-          <div className="sm:col-span-2">
-            <label className={labelCls}>Plot Area *</label>
-            <CustomSelect
-              compact
-              value={v.plotArea || ""}
-              onChange={(val) => handleChange("plotArea", val)}
-              options={PLOT_AREA}
-              placeholder="Select area"
-            />
-            {err("plotArea")}
-          </div>
-        )}
-
         <div className="sm:col-span-2">
           <label className={labelCls}>Preferred Lease Tenure</label>
           <div className="flex flex-wrap gap-2">
@@ -645,6 +610,18 @@ export default function RentRequirementForm({
         </div>
 
         <div className="sm:col-span-2">
+          <label className={labelCls} htmlFor="r-notes">Additional Notes</label>
+          <textarea
+            id="r-notes"
+            rows={3}
+            placeholder="Anything else you want us to know (optional)"
+            value={v.additionalNotes || ""}
+            onChange={(e) => handleChange("additionalNotes", e.target.value.slice(0, 500))}
+            className={inputCls}
+          />
+        </div>
+
+        <div className="sm:col-span-2">
           <label className={labelCls} htmlFor="r-ref">Referral Code</label>
           <input
             id="r-ref"
@@ -653,7 +630,7 @@ export default function RentRequirementForm({
             value={referralCode}
             onChange={(e) =>
               setReferralCode(
-                e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8),
+                e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10),
               )
             }
             className={inputCls}

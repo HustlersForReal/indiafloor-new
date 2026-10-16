@@ -22,10 +22,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 
-const DEFAULT_CENTER: [number, number] = [28.6139, 77.209];
+const DEFAULT_CENTER: [number, number] = [28.55, 77.25];
+
+/** Service area — Noida, Delhi, Greater Noida, Faridabad, Greater Faridabad,
+ *  Gurugram, Ghaziabad. The map cannot be panned or zoomed outside this box. */
+const NCR_BOUNDS: L.LatLngBoundsExpression = [
+  [28.15, 76.75],
+  [28.95, 77.65],
+];
 
 const pinIcon = L.divIcon({
-  html: `<div style="width:24px;height:24px;border-radius:999px;background:#1f7ad1;border:3px solid #0a1f45;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
+  html: `<div style="width:24px;height:24px;border-radius:999px;background:#314367;border:3px solid #0a1f45;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
   className: "",
   iconSize: [24, 24],
   iconAnchor: [12, 12],
@@ -59,10 +66,16 @@ function FlyTo({ location }: { location: string }) {
     if (q.length < 3) return;
 
     const t = setTimeout(() => {
-      fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`)
+      fetch(
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lat=28.55&lon=77.25`,
+      )
         .then((r) => r.json())
         .then((data) => {
-          const f = data?.features?.[0];
+          const feats: { geometry: { coordinates: [number, number] } }[] =
+            data?.features ?? [];
+          const inNcr = (c: [number, number]) =>
+            c[1] >= 28.15 && c[1] <= 28.95 && c[0] >= 76.75 && c[0] <= 77.65;
+          const f = feats.find((ft) => inNcr(ft.geometry.coordinates)) ?? feats[0];
           if (!f) return;
           const [lon, lat] = f.geometry.coordinates;
           map.setView([lat, lon], 14, { animate: false });
@@ -126,6 +139,7 @@ export default function LocationMap({
   const handlePick = useCallback(
     async (latlng: L.LatLng) => {
       const { lat, lng } = latlng;
+      if (lat < 28.15 || lat > 28.95 || lng < 76.75 || lng > 77.65) return;
       setPicked([lat, lng]);
 
       try {
@@ -157,6 +171,9 @@ export default function LocationMap({
         <MapContainer
           center={DEFAULT_CENTER}
           zoom={11}
+          minZoom={10}
+          maxBounds={NCR_BOUNDS}
+          maxBoundsViscosity={1.0}
           zoomControl={false}
           attributionControl={true}
           style={{ width: size.w, height: size.h }}

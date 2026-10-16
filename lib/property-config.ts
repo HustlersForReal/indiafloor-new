@@ -22,11 +22,8 @@ export const TIER_RANGES: Record<"sale" | "rent", Record<TierName, string>> = {
 /* ------------------------------------------------------------------ options */
 
 export const CITY_OPTIONS = [
-  "Delhi", "Gurugram", "Noida", "Greater Noida", "Ghaziabad", "Faridabad",
-  "Sonipat", "Bahadurgarh", "Panipat", "Rohtak", "Rewari", "Dharuhera",
-  "Palwal", "Nuh", "Meerut", "Hapur", "Baghpat", "Bulandshahr", "Bhiwadi",
-  "Alwar", "Bharatpur", "Muzaffarnagar", "Shamli", "Karnal", "Jhajjar",
-  "Mahendragarh", "Bhiwani", "Charkhi Dadri", "Jind", "Other",
+  "Noida", "Delhi", "Greater Noida", "Faridabad",
+  "Greater Faridabad", "Gurugram", "Ghaziabad",
 ];
 
 export const PROPERTY_TYPE_OPTIONS: string[] = [
@@ -36,6 +33,7 @@ export const PROPERTY_TYPE_OPTIONS: string[] = [
   "Commercial Floors",
   "Industrial Floors",
   "Institutional Floors",
+  "Other",
 ];
 
 export const BEDROOM_OPTS = ["1 RK / 1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"];

@@ -1,41 +1,65 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import {
-  ArrowRight,
-  ChevronDown,
-  Lock,
-  Phone,
-  User,
-} from "lucide-react";
+import { ArrowRight, Lock, Phone, User } from "lucide-react";
+import CustomSelect from "./CustomSelect";
+import { REQUEST_TAB_EVENT } from "./BuyerPreferencesSection";
+import { SELLER_MODE_EVENT } from "./SellerSection";
+import { sanitizeName, sanitizePhone } from "@/lib/validation";
 
-const IAM_OPTIONS = ["Buyer", "Seller", "Tenant", "Channel Partner"];
+const ROLE_OPTIONS = ["Buyer", "Tenant", "Property Owner", "Builder"];
 
 const fieldWrap =
   "flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[13px] transition-colors focus-within:border-navy-700";
 
 export default function LeadForm() {
-  const [sent, setSent] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState("");
+  const [roleError, setRoleError] = useState("");
+  const [sending, setSending] = useState(false);
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setSent(true);
-  };
+    if (!role) {
+      setRoleError("Please select who you are.");
+      return;
+    }
+    setSending(true);
 
-  if (sent) {
-    return (
-      <div className="flex min-h-[380px] flex-col items-center justify-center gap-3 rounded-2xl bg-white p-8 text-center shadow-2xl">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-xl text-emerald-600">
-          ✓
-        </span>
-        <p className="text-xl font-bold text-navy-900">Requirement Received</p>
-        <p className="max-w-[280px] text-sm text-slate-500">
-          Thanks for reaching out. Our team will call you back with the right
-          guidance and next steps.
-        </p>
-      </div>
-    );
-  }
+    const cleanName = sanitizeName(name);
+    const cleanPhone = sanitizePhone(phone);
+
+    if (role === "Buyer" || role === "Tenant") {
+      window.dispatchEvent(
+        new CustomEvent(REQUEST_TAB_EVENT, {
+          detail: {
+            tab: role === "Tenant" ? "rent" : "buy",
+            name: cleanName,
+            phone: cleanPhone,
+          },
+        }),
+      );
+      document
+        .querySelector("#registration-section")
+        ?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.dispatchEvent(
+        new CustomEvent(SELLER_MODE_EVENT, {
+          detail: {
+            tab: role === "Builder" ? "builder" : "seller",
+            name: cleanName,
+            phone: cleanPhone,
+          },
+        }),
+      );
+      document
+        .querySelector("#seller-section")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }
+
+    setSending(false);
+  };
 
   return (
     <div className="rounded-2xl bg-white p-5 shadow-2xl">
@@ -54,6 +78,8 @@ export default function LeadForm() {
             required
             type="text"
             placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="w-full bg-transparent outline-none placeholder:text-slate-400"
           />
         </label>
@@ -65,37 +91,39 @@ export default function LeadForm() {
             type="tel"
             inputMode="numeric"
             placeholder="Mobile Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="w-full bg-transparent outline-none placeholder:text-slate-400"
           />
         </label>
 
-        <label className={fieldWrap}>
-          <User className="h-[18px] w-[18px] shrink-0 text-slate-400" />
-          <span className="text-slate-500">I am a</span>
-          <span className="relative ml-auto flex items-center">
-            <select
-              required
-              defaultValue=""
-              className="cursor-pointer appearance-none bg-transparent pr-6 text-[13px] font-semibold text-navy-900 outline-none"
-            >
-              <option value="" disabled>
-                Select
-              </option>
-              {IAM_OPTIONS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-0 h-4 w-4 text-navy-900" />
-          </span>
-        </label>
+        <div>
+          <div className={`${fieldWrap} gap-0 !px-0`}>
+            <User className="ml-3 h-[18px] w-[18px] shrink-0 text-slate-400" />
+            <div className="min-w-0 flex-1">
+              <CustomSelect
+                bare
+                value={role}
+                onChange={(v) => {
+                  setRole(v);
+                  setRoleError("");
+                }}
+                options={ROLE_OPTIONS}
+                placeholder="I am a"
+              />
+            </div>
+          </div>
+          {roleError && (
+            <span className="mt-0.5 block text-[10px] text-red-400">{roleError}</span>
+          )}
+        </div>
 
         <button
           type="submit"
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-800 py-3 text-[14px] font-bold text-white transition-colors hover:bg-navy-700"
+          disabled={sending}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-navy-800 py-3 text-[14px] font-bold text-white transition-colors hover:bg-navy-700 disabled:opacity-50"
         >
-          Submit Now
+          {sending ? "Please wait..." : "Next"}
           <ArrowRight className="h-[18px] w-[18px]" />
         </button>
       </form>
