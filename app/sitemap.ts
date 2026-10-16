@@ -10,6 +10,8 @@ import { SITE_URL } from "@/lib/seo";
  * and is left out. When real route pages are added (e.g. per-city landing
  * pages), append entries here — no manual XML editing required.
  */
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
