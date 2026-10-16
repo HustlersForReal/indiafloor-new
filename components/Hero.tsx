@@ -35,7 +35,7 @@ export default function Hero() {
           <h1 className="mt-1 text-center text-[48px] leading-[1.08] font-extrabold tracking-tight text-white sm:mt-4 sm:text-left sm:text-[46px]">
             Your Floor. Our Expertise.
             <br />
-            <span className="text-gold-500">Your Next Step.</span>
+            <span className="text-[#F0A41C]">Your Next Step.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-[520px] text-center text-[14.5px] leading-relaxed font-medium text-white/85 sm:mx-0 sm:text-left">
@@ -43,7 +43,7 @@ export default function Hero() {
             Selling, Renting With End-To-End Property Services &amp; Liaisoning
             Assistance.
             <br />
-            <span className="mt-1.5 block text-[15px] font-semibold text-gold-500">
+            <span className="mt-1.5 block text-[15px] font-semibold text-[#F0A41C]">
               Reach Us To Find A Floor, That You Will Adore.
             </span>
           </p>

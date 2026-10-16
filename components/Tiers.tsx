@@ -28,8 +28,8 @@ const TIERS: { name: string; icon: typeof Crown; desc: ReactNode; points: string
     ),
     points: [],
     card: "border-[#f0dfae] bg-[#fdf6e3]",
-    badge: "bg-gold-500 text-white",
-    check: "text-gold-600",
+    badge: "bg-[#F0A41C] text-white",
+    check: "text-[#F0A41C]",
   },
   {
     name: "Silver Tier",

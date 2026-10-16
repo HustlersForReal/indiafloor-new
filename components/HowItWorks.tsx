@@ -40,7 +40,7 @@ export default function HowItWorks() {
             <div key={s.no} className="flex flex-col items-center text-center">
               <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-navy-900">
                 <s.icon className="h-7 w-7 text-white" strokeWidth={1.6} />
-                <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gold-500 text-[11px] font-extrabold text-navy-900">
+                <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#F0A41C] text-[11px] font-extrabold text-navy-900">
                   {s.no}
                 </span>
               </span>
