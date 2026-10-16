@@ -1,0 +1,10 @@
+/* Leaflet controls (zoom buttons, attribution) sit above panels at z-index
+   1000+. Keep them below any open dropdown so a select can never be covered. */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 500;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px;
+}

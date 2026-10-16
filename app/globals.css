@@ -1,0 +1,35 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@import "./leaflet-overrides.css";
+
+@theme {
+  --color-navy-950: #060f24;
+  --color-navy-900: #0a1f45;
+  --color-navy-800: #0e2c60;
+  --color-navy-700: #15407f;
+  --color-ink: #0e2a5c;
+  --color-gold-500: #1f7ad1;
+  --color-gold-600: #1470bd;
+  --color-mist: #f5f7fa;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* tokens the ported form sections use — mapped to the new site palette */
+  --color-navy: #0a1f45;
+  --color-gold: #1f7ad1;
+  --color-gold-light: #5aa5e3;
+  --color-gold-dark: #0f5c9e;
+  --color-shell: #e9eaee;
+  --color-ink: #0e2a5c;
+  --color-muted: #5b6472;
+  --color-primary: #0e2c60;
+  --color-primary-dark: #0a1f45;
+  --color-page-bg: #ffffff;
+  --color-panel-bg: #f5f7fa;
+  --color-border: #dde3ea;
+  --color-off-white: #0e2a5c;
+}
+
+body {
+  background: #ffffff;
+  color: #1b2340;
+}
