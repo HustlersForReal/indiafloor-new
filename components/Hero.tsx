@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Building2, Handshake, Home, KeyRound } from "lucide-react";
 import LeadForm from "./LeadForm";
@@ -50,6 +51,20 @@ const ROLES = [
 ];
 
 export default function Hero() {
+  const [refScale, setRefScale] = useState(1);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      // grow slightly as user scrolls, capped so it never gets absurd
+      const next = Math.min(1 + y / 600, 1.6);
+      setRefScale(next);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <section id="top" className="relative min-h-[50svh] overflow-hidden bg-navy-950">
       {/* real backdrop photo + navy legibility overlays */}
@@ -118,8 +133,33 @@ export default function Hero() {
           </div>
         </div>
 
-        <LeadForm />
+        <div>
+          <a
+            href="#referral-section"
+            style={{ transform: `scale(${refScale})`, transformOrigin: "center", transition: "transform 0.15s ease-out" }}
+            className="mb-6 block text-center text-[20px] font-extrabold tracking-wide text-[#F0A41C] underline decoration-white decoration-2 underline-offset-4 sm:hidden"
+            onClick={() => {
+              const el = document.getElementById("referral-section");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            Refer &amp; Earn
+          </a>
+          <LeadForm />
+        </div>
       </div>
+
+      <a
+        href="#referral-section"
+        onClick={() => {
+          const el = document.getElementById("referral-section");
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }}
+        style={{ transform: `translateX(-50%) scale(${refScale})`, transformOrigin: "bottom center", transition: "transform 0.15s ease-out" }}
+        className="absolute bottom-4 left-1/2 z-20 hidden whitespace-nowrap text-[20px] font-extrabold tracking-wide text-[#F0A41C] underline decoration-white decoration-2 underline-offset-4 sm:block"
+      >
+        Refer &amp; Earn
+      </a>
     </section>
   );
 }

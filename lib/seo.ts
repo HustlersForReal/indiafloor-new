@@ -11,7 +11,7 @@ export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") || "https://indiafloor.com";
 
 export const SITE_NAME = "IndiaFloor";
-export const SITE_TITLE = "IndiaFloor.com: The Door to Every Indian Floor";
+export const SITE_TITLE = "IndiaFloor.com: Builder Floors, Apartments, Penthouses";
 export const SITE_DESCRIPTION =
   "IndiaFloor.com is your single destination for all floor-related needs, from buying, selling and renting to approvals, liaisoning and legal support.";
 
