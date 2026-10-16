@@ -13,7 +13,7 @@ const CALL_NUMBER = process.env.NEXT_PUBLIC_CALL_NUMBER || "+918800505050";
 
 /** Pre-filled message so the user just hits send. */
 function openWhatsApp() {
-  const msg = encodeURIComponent("Hello IndiaFloor.com, I Want Expert Advice.");
+  const msg = encodeURIComponent("Hello IndiaFloor.com, I Want An Expert Advice.");
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
 }
 

@@ -12,7 +12,12 @@ import { SELLER_MODE_EVENT } from "./SellerSection";
  * right tab/mode before landing. (This site has no dedicated partner section
  * yet, so both partner links land on the footer contact block.)
  */
-const NAV_LINKS = [
+const NAV_LINKS: {
+  label: string;
+  href: string;
+  go?: () => void;
+  external?: boolean;
+}[] = [
   {
     label: "Buyer",
     href: "#registration-section",
@@ -45,6 +50,11 @@ const NAV_LINKS = [
         new CustomEvent(SELLER_MODE_EVENT, { detail: { tab: "builder" } }),
       ),
   },
+  {
+    label: "Connect",
+    href: "#contact",
+    go: undefined,
+  },
 ];
 
 const PARTNER_LINKS = [
@@ -65,7 +75,10 @@ export default function Header() {
             <a
               key={link.label}
               href={link.href}
-              onClick={link.go}
+              {...(link.external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+              onClick={() => link.go?.()}
               className="text-[15px] font-medium text-[#2b3a55] transition-colors hover:text-navy-900"
             >
               {link.label}
@@ -138,8 +151,11 @@ export default function Header() {
             <a
               key={link.label}
               href={link.href}
+              {...(link.external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
               onClick={() => {
-                link.go();
+                link.go?.();
                 setOpen(false);
               }}
               className="block border-b border-slate-100 py-3 text-[15px] font-medium text-[#2b3a55]"

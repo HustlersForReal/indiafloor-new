@@ -4,16 +4,17 @@
  * The attribution code is mirrored across FIVE independent browser facilities
  * so a single cache-clear cannot kill it:
  *
- *   1. httpOnly cookie (server-set via /api/referral) — survives JS + cache clear
+ *   1. cookie (client-side document.cookie; a server-set httpOnly cookie needs
+ *      a server, which the static export does not have) — survives JS cache clear
  *   2. IndexedDB      — survives normal cache clears
  *   3. Cache Storage  — separate from the HTTP cache
  *   4. localStorage   — sync reads (forms read this on mount)
  *   5. sessionStorage — partial (tab-session only)
  *
  * Writes go to all layers. Reads reconcile every layer and rewrite whichever
- * came back empty/stale (self-heal). The httpOnly cookie is the recovery
- * source: it is the only layer a cache clear cannot reach, so `hydrate` pulls
- * the code back from it when every client layer is gone.
+ * came back empty/stale (self-heal). The cookie is a recovery anchor: it is
+ * the layer least likely to be wiped by a browser cache clear, so `hydrate`
+ * pulls the code back from it when every client layer is gone.
  *
  * Canonical form is `#BAAP48498A` (current) or `#PB12345A` (legacy) — a `#`
  * followed by the code. Two generations are accepted at once so old links,
@@ -31,7 +32,6 @@ const IDB_STORE = "refs";
 const IDB_KEY = "current";
 const CACHE_NAME = "pb-ref-cache-v1";
 const CACHE_PATH = "/__pb_ref__";
-const COOKIE_ENDPOINT = "/api/referral";
 
 /** Attribution window. Exported so the popup/API can reference one source. */
 export const REF_TTL_MS = 365 * 24 * 60 * 60 * 1000; // 365 days
@@ -230,26 +230,43 @@ async function writeCacheStorage(r: RefRecord): Promise<void> {
   }
 }
 
-/* ------------------------------------------- layer 1: httpOnly cookie (server) */
+/* ------------------------------------------- layer 1: cookie (client-side) */
 
-async function readServerCookie(): Promise<string | null> {
+/**
+ * A static export has no server, so the cookie is set/read here via
+ * document.cookie rather than an httpOnly server cookie. document.cookie is
+ * still a distinct layer from the other four: it is not part of the HTTP cache
+ * and is not cleared by "clear site data → cached images", which is why it
+ * remains a useful recovery anchor even without httpOnly.
+ */
+const COOKIE_KEY = "pb_ref";
+const COOKIE_MAX_AGE = 400 * 24 * 60 * 60; // browsers cap ~400 days
+
+function readServerCookie(): string | null {
   try {
-    const res = await fetch(COOKIE_ENDPOINT, { method: "GET" });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { code?: string | null };
-    return data?.code ? normalizeRefCode(data.code) : null;
+    const match = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith(`${COOKIE_KEY}=`));
+    if (!match) return null;
+    const value = decodeURIComponent(match.slice(COOKIE_KEY.length + 1));
+    return normalizeRefCode(value);
   } catch {
     return null;
   }
 }
 
 function writeServerCookie(code: string): void {
-  // Fire-and-forget — the cookie is a recovery anchor, not on the hot path.
   try {
-    void fetch(
-      `${COOKIE_ENDPOINT}?code=${encodeURIComponent(code.replace(/^#/, ""))}`,
-      { method: "GET" },
-    ).catch(() => {});
+    const short = code.replace(/^#/, "");
+    document.cookie = `${COOKIE_KEY}=${encodeURIComponent(short)}; max-age=${COOKIE_MAX_AGE}; path=/; samesite=lax`;
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearServerCookie(): void {
+  try {
+    document.cookie = `${COOKIE_KEY}=; max-age=0; path=/`;
   } catch {
     /* ignore */
   }
@@ -290,13 +307,13 @@ export function getReferredBy(): string | null {
  * if every client layer is dead, the httpOnly cookie brings the code back.
  */
 export async function hydrateReferredBy(): Promise<string | null> {
-  const [serverCode, idb, cache, sync, sess] = await Promise.all([
-    readServerCookie(),
+  const [idb, cache, sync, sess] = await Promise.all([
     readIndexedDb(),
     readCacheStorage(),
-    readSyncStorage(),
-    readSessionStorage(),
+    Promise.resolve(readSyncStorage()),
+    Promise.resolve(readSessionStorage()),
   ]);
+  const serverCode = readServerCookie();
 
   const candidates = [sync, sess, idb, cache].filter(
     (r): r is RefRecord => r !== null,
@@ -360,7 +377,7 @@ export async function clearReferredBy(): Promise<void> {
     /* ignore */
   }
   try {
-    void fetch(`${COOKIE_ENDPOINT}?clear=1`, { method: "GET" }).catch(() => {});
+    clearServerCookie();
   } catch {
     /* ignore */
   }

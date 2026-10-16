@@ -422,7 +422,7 @@ export default function BuyerPreferencesSection() {
                     : "border-transparent text-muted hover:text-ink"
                 }`}
               >
-                {t === "buy" ? "Buyer Requirement" : "Rent Requirement"}
+                {t === "buy" ? "Buyer Requirement" : "Tenant Requirement"}
               </button>
             );
           })}

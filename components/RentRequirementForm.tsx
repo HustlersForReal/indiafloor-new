@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Rent Requirement — written for this project, not ported from the FORM-LOGICS
+ * Tenant Requirement — written for this project, not ported from the FORM-LOGICS
  * docs. Same field shapes as the buyer form where it makes sense (name, phone,
  * city, locality + map) and rent-specific ladders/pricing where it does not.
  */
@@ -238,7 +238,7 @@ export default function RentRequirementForm({
     const msg = [
       "━━━━━━━━━━━━━━━━━━━━",
       "*INDIA FLOOR*",
-      "New Rental Requirement",
+      "New Tenant Requirement",
       "━━━━━━━━━━━━━━━━━━━━",
       "",
       `*Name:* ${v.name || "-"}`,
@@ -334,7 +334,7 @@ export default function RentRequirementForm({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16">
         <CircleCheck className="h-12 w-12 text-primary" strokeWidth={1.5} />
-        <span className="text-xl font-bold text-primary">Rental Requirement Received</span>
+        <span className="text-xl font-bold text-primary">Tenant Requirement Received</span>
         <p className="max-w-[320px] text-center text-sm text-muted">
           {duplicateNote ??
             "Our team will review what you are looking for and call you with matching options."}
