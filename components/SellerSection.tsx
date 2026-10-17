@@ -321,6 +321,80 @@ export default function SellerSection() {
   const builder = useListingForm("builder");
   const F = mode === "seller" ? seller : builder;
 
+  const [showMulti, setShowMulti] = useState(false);
+
+  useEffect(() => {
+    if (!showMulti) return;
+    const fill = () => {
+      const stored = getReferredBy();
+      if (stored) {
+        setMulti((m) =>
+          m.referralCode ? m : { ...m, referralCode: stored.replace(/^#/, "") },
+        );
+        return;
+      }
+      try {
+        const raw = new URLSearchParams(window.location.search).get("ref");
+        if (raw) {
+          const norm = normalizeRefCode(raw);
+          if (norm)
+            setMulti((m) =>
+              m.referralCode ? m : { ...m, referralCode: norm.replace(/^#/, "") },
+            );
+        }
+      } catch {
+        /* no window */
+      }
+    };
+    fill();
+  }, [showMulti]);
+  const [multi, setMulti] = useState({
+    name: "",
+    phone: "",
+    referralCode: "",
+    inventories: "",
+  });
+  const [multiErrors, setMultiErrors] = useState<Record<string, string>>({});
+
+  const handleMultiSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const errs: Record<string, string> = {};
+    if (!multi.name.trim()) errs.name = "Required";
+    else if (!NAME_RE.test(multi.name.trim()))
+      errs.name = "Enter a valid name (min 3 letters)";
+    if (!multi.phone.trim()) errs.mobile = "Required";
+    else if (!PHONE_RE.test(multi.phone))
+      errs.mobile = "Enter a valid 10-digit mobile number";
+    if (!multi.inventories.trim()) errs.inventories = "Required";
+    setMultiErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    const msg = [
+      "━━━━━━━━━━━━━━━━━━━━",
+      "*INDIA FLOOR*",
+      "Multiple Builder Inventories",
+      "━━━━━━━━━━━━━━━━━━━━",
+      "",
+      `*Name:* ${multi.name || "-"}`,
+      `*Mobile:* ${multi.phone || "-"}`,
+      multi.referralCode.trim() ? `*Referral Code:* ${multi.referralCode.trim()}` : "",
+      "",
+      "*Inventories:*",
+      multi.inventories.trim(),
+      "━━━━━━━━━━━━━━━━━━━━",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`,
+      "_blank",
+    );
+    setShowMulti(false);
+    setMulti({ name: "", phone: "", referralCode: "", inventories: "" });
+    setMultiErrors({});
+  };
+
   useEffect(() => {
     const onMode = (e: Event) => {
       const detail = (e as CustomEvent<{ tab: "seller" | "builder"; name?: string; phone?: string }>).detail;
@@ -551,11 +625,125 @@ export default function SellerSection() {
                     </div>
                   }
                 />
+
+                {mode === "builder" && (
+                  <div className="mt-4 text-center">
+                    <p className="text-[12px] font-bold text-muted">OR</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowMulti(true)}
+                      className="mt-2 cursor-pointer text-[13px] font-bold text-primary underline decoration-primary/40 underline-offset-4 hover:text-primary-dark"
+                    >
+                      Submit Multiple Inventories
+                    </button>
+                  </div>
+                )}
               </form>
             )}
           </div>
         </div>
       </div>
+
+      {showMulti && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Close"
+            className="absolute inset-0 cursor-default bg-[#0a1f45]/70 backdrop-blur-sm"
+            onClick={() => setShowMulti(false)}
+          />
+          <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-white p-6 shadow-2xl sm:p-8">
+            <button
+              type="button"
+              onClick={() => setShowMulti(false)}
+              aria-label="Close"
+              className="absolute top-4 right-4 text-2xl leading-none text-muted hover:text-primary"
+            >
+              &times;
+            </button>
+            <p className="mb-2 text-xs font-bold tracking-[0.2em] text-primary uppercase">
+              Builder Listing
+            </p>
+            <h2 className="mb-6 text-2xl font-extrabold text-off-white">
+              Submit Multiple Inventories
+            </h2>
+            <form onSubmit={handleMultiSubmit} className="grid gap-3">
+              <div>
+                <label className={labelCls}>Name *</label>
+                <input
+                  type="text"
+                  placeholder="Your full name"
+                  value={multi.name}
+                  onChange={(e) =>
+                    setMulti((m) => ({ ...m, name: sanitizeName(e.target.value) }))
+                  }
+                  className={inputCls}
+                />
+                {multiErrors.name && (
+                  <span className="mt-0.5 block text-[10px] text-red-400">{multiErrors.name}</span>
+                )}
+              </div>
+              <div>
+                <label className={labelCls}>Phone Number *</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="10-digit mobile number"
+                  value={multi.phone}
+                  onChange={(e) =>
+                    setMulti((m) => ({ ...m, phone: sanitizePhone(e.target.value) }))
+                  }
+                  className={inputCls}
+                />
+                {multiErrors.mobile && (
+                  <span className="mt-0.5 block text-[10px] text-red-400">{multiErrors.mobile}</span>
+                )}
+              </div>
+              <div>
+                <label className={labelCls}>Referral Code</label>
+                <input
+                  type="text"
+                  placeholder="e.g. PB12345A (optional)"
+                  value={multi.referralCode}
+                  onChange={(e) =>
+                    setMulti((m) => ({
+                      ...m,
+                      referralCode: e.target.value
+                        .toUpperCase()
+                        .replace(/[^A-Z0-9]/g, "")
+                        .slice(0, 10),
+                    }))
+                  }
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Paste Multiple Inventories *</label>
+                <textarea
+                  rows={8}
+                  placeholder="Paste your multiple inventory details here"
+                  value={multi.inventories}
+                  onChange={(e) =>
+                    setMulti((m) => ({ ...m, inventories: e.target.value }))
+                  }
+                  className={inputCls}
+                />
+                {multiErrors.inventories && (
+                  <span className="mt-0.5 block text-[10px] text-red-400">
+                    {multiErrors.inventories}
+                  </span>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="mt-2 cursor-pointer rounded-lg bg-primary py-3 font-sans text-[13px] font-bold tracking-wide text-white transition-all hover:bg-primary-dark"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
