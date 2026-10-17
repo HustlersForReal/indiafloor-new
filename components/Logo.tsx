@@ -23,7 +23,7 @@ export default function Logo({ compact = false }: { compact?: boolean }) {
         </span>
         {!compact && (
           <span className="mt-0.5 block text-[8.5px] font-semibold tracking-[0.18em] text-navy-900/70">
-            THE DOOR TO EVERY INDIAN FLOOR.
+            THE DOOR TO EVERY PROPERTY FLOOR.
           </span>
         )}
       </span>
