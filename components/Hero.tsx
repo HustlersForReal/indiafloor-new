@@ -105,7 +105,7 @@ export default function Hero() {
             Assistance.
             <br />
             <span className="mt-1.5 block text-[15px] font-semibold text-[#F0A41C]">
-              Reach Us To Find A Floor, That You Will Adore.
+              The Door To Every Property Floor.
             </span>
           </p>
 

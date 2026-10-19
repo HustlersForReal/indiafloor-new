@@ -13,6 +13,24 @@ function B({ c, children }: { c: "gold" | "silver" | "diamond"; children: ReactN
 
 const TIERS: { name: string; icon: typeof Crown; desc: ReactNode; points: string[]; card: string; badge: string; check: string }[] = [
   {
+    name: "Silver Tier",
+    icon: Star,
+    desc: (
+      <>
+        This tier deals with properties with an average value of{" "}
+        <B c="silver">upto 2 Crores INR</B> and an average monthly rent of{" "}
+        <B c="silver">upto 2 lakhs per month</B>. This tier is backed by experts
+        who are <B c="silver">serving the masses</B> and have great knowledge of
+        the <B c="silver">past, present property market</B> and a good{" "}
+        <B c="silver">future predicting capacities</B>.
+      </>
+    ),
+    points: [],
+    card: "border-[#dde3e8] bg-[#eef1f4]",
+    badge: "bg-[#9aa4ae] text-white",
+    check: "text-[#7c8791]",
+  },
+  {
     name: "Gold Tier",
     icon: Crown,
     desc: (
@@ -30,24 +48,6 @@ const TIERS: { name: string; icon: typeof Crown; desc: ReactNode; points: string
     card: "border-[#f0dfae] bg-[#fdf6e3]",
     badge: "bg-[#F0A41C] text-white",
     check: "text-[#F0A41C]",
-  },
-  {
-    name: "Silver Tier",
-    icon: Star,
-    desc: (
-      <>
-        This tier deals with properties with an average value of{" "}
-        <B c="silver">upto 2 Crores INR</B> and an average monthly rent of{" "}
-        <B c="silver">upto 2 lakhs per month</B>. This tier is backed by experts
-        who are <B c="silver">serving the masses</B> and have great knowledge of
-        the <B c="silver">past, present property market</B> and a good{" "}
-        <B c="silver">future predicting capacities</B>.
-      </>
-    ),
-    points: [],
-    card: "border-[#dde3e8] bg-[#eef1f4]",
-    badge: "bg-[#9aa4ae] text-white",
-    check: "text-[#7c8791]",
   },
   {
     name: "Diamond Tier",

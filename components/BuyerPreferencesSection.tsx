@@ -401,7 +401,7 @@ export default function BuyerPreferencesSection() {
             className="mx-auto mt-4 max-w-[520px] text-muted"
             style={{ fontSize: "clamp(0.875rem, 1.1vw, 1rem)" }}
           >
-            Tell us what you need and we will help you discover suitable options.
+            Tell us your requirements and we will find you a floor that you will adore.
           </p>
         </div>
 

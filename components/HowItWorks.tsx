@@ -1,6 +1,6 @@
 "use client";
 
-import { Calculator, ClipboardList, MessagesSquare, Rocket } from "lucide-react";
+import { Calculator, CheckCircle2, ClipboardList, MessagesSquare, Rocket } from "lucide-react";
 
 const STEPS = [
   {
@@ -27,6 +27,12 @@ const STEPS = [
     title: "We Initiate",
     desc: "And initiate the process to get it done for you.",
   },
+  {
+    no: "05",
+    icon: CheckCircle2,
+    title: "We Accomplish",
+    desc: "We provide end-to-end service for a seamless and flawless closure of your property floor deal.",
+  },
 ];
 
 export default function HowItWorks() {
@@ -37,7 +43,7 @@ export default function HowItWorks() {
           How It Works
         </h2>
 
-        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
           {STEPS.map((s) => (
             <div key={s.no} className="flex flex-col items-center text-center">
               <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-navy-900">

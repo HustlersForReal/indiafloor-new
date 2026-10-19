@@ -1,3 +1,5 @@
+import { ChevronDown } from "lucide-react";
+
 const POINTS = [
   {
     title: "Buyers/Tenants Pay Nothing",
@@ -72,6 +74,7 @@ export default function WhyIndiaFloor() {
             We welcome you to schedule and accept our one challenge to prove you
             how we provide you the best value for your property floor.
           </p>
+          <ChevronDown className="mx-auto mt-3 h-10 w-10 animate-bounce text-[#F0A41C]" />
         </a>
       </div>
     </section>
