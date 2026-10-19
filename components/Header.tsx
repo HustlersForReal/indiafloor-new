@@ -60,6 +60,7 @@ const NAV_LINKS: {
 const PARTNER_LINKS = [
   { label: "Professional Partner", href: "#contact" },
   { label: "Referral Partner", href: "#contact" },
+  { label: "All Property Services", href: "#property-baap" },
 ];
 
 export default function Header() {
