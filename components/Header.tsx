@@ -60,7 +60,6 @@ const NAV_LINKS: {
 const PARTNER_LINKS = [
   { label: "Professional Partner", href: "#contact" },
   { label: "Referral Partner", href: "#contact" },
-  { label: "All Property Services", href: "#property-baap" },
 ];
 
 export default function Header() {
@@ -85,6 +84,13 @@ export default function Header() {
               {link.label}
             </a>
           ))}
+
+          <a
+            href="#property-baap"
+            className="text-[15px] font-medium text-[#2b3a55] transition-colors hover:text-navy-900"
+          >
+            All Property Services
+          </a>
 
           {/* Partner — hover dropdown (mirrors the old site) */}
           <div className="group relative">
@@ -164,6 +170,14 @@ export default function Header() {
               {link.label}
             </a>
           ))}
+
+          <a
+            href="#property-baap"
+            onClick={() => setOpen(false)}
+            className="block border-b border-slate-100 py-3 text-[15px] font-medium text-[#2b3a55]"
+          >
+            All Property Services
+          </a>
 
           <span className="block pt-4 pb-1 text-[11px] font-bold tracking-[0.12em] text-slate-400 uppercase">
             Partner
